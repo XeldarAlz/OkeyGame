@@ -1,0 +1,40 @@
+using Runtime.Core.Utilities;
+using Runtime.Infrastructure.AssetManagement;
+using Runtime.Infrastructure.Localization;
+using UnityEngine;
+using Zenject;
+
+namespace Runtime.Installers
+{
+    public sealed class ProjectInstaller : MonoInstaller
+    {
+        public override void InstallBindings()
+        {
+            Debug.Log("[ProjectInstaller] Installing global services...");
+            
+            InstallInfrastructureServices();
+            InstallUtilityProviders();
+            
+            Debug.Log("[ProjectInstaller] Global services installed successfully");
+        }
+
+        private void InstallInfrastructureServices()
+        {
+            Container.Bind<IAssetService>().To<AddressableAssetService>().AsSingle().NonLazy();
+            Container.Bind<ILocalizationService>().To<UnityLocalizationService>().AsSingle().NonLazy();
+            
+            Debug.Log("[ProjectInstaller] Infrastructure services bound");
+            
+            // TODO: Bind IAudioService implementation when created
+            // TODO: Bind IPersistenceService implementation when created
+        }
+
+        private void InstallUtilityProviders()
+        {
+            Container.Bind<ITimeProvider>().To<UnityTimeProvider>().AsSingle();
+            Container.Bind<IRandomProvider>().To<UnityRandomProvider>().AsSingle();
+            
+            Debug.Log("[ProjectInstaller] Utility providers bound");
+        }
+    }
+}
