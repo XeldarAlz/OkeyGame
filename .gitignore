@@ -7,7 +7,6 @@ src/**/[Ll]ogs/
 src/**/[Ss]erializedBuildInfo/
 src/**/[Mm]emoryCaptures/
 src/**/[Aa]ssets/AssetStoreTools*
-src/**/[Aa]ssets/Documents
 src/**/[Aa]ssets/Plugins/Editor/JetBrains*
 src/**/.gradle/
 src/**/ExportedObj/
