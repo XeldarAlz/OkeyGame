@@ -6,7 +6,7 @@ using Runtime.Domain.Models;
 using UnityEngine;
 using Zenject;
 
-namespace Runtime.Services
+namespace Runtime.Services.GameLogic.Turn
 {
     public sealed class TurnManager : ITurnManager
     {

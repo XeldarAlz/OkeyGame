@@ -5,7 +5,7 @@ using Runtime.Domain.Enums;
 using Runtime.Domain.Models;
 using UnityEngine;
 
-namespace Runtime.Services
+namespace Runtime.Services.GameLogic.State
 {
     public sealed class GameStateService : IGameStateService
     {

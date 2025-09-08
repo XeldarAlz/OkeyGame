@@ -4,7 +4,7 @@ using Runtime.Core.Architecture;
 using Runtime.Domain.Models;
 using Runtime.Domain.ValueObjects;
 
-namespace Runtime.Services
+namespace Runtime.Services.GameLogic.Tiles
 {
     public interface ITileService : IInitializableService
     {

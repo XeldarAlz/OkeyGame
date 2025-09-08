@@ -1,6 +1,7 @@
 using Runtime.Core.Utilities;
 using Runtime.Infrastructure.AssetManagement;
 using Runtime.Infrastructure.Localization;
+using Runtime.Services.Navigation;
 using UnityEngine;
 using Zenject;
 
@@ -22,6 +23,7 @@ namespace Runtime.Installers
         {
             Container.Bind<IAssetService>().To<AddressableAssetService>().AsSingle().NonLazy();
             Container.Bind<ILocalizationService>().To<UnityLocalizationService>().AsSingle().NonLazy();
+            Container.Bind<ISceneNavigator>().To<SceneNavigator>().AsSingle().NonLazy();
             
             Debug.Log("[ProjectInstaller] Infrastructure services bound");
             

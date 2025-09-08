@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Runtime.Domain.Models;
 using UnityEngine;
 
-namespace Runtime.Services
+namespace Runtime.Infrastructure.Persistence
 {
     public sealed class PersistenceService : IPersistenceService
     {

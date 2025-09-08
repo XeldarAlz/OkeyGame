@@ -1,10 +1,14 @@
-using Runtime.Domain.Enums;
-using Runtime.Services;
+using Runtime.Infrastructure.Persistence;
 using Runtime.Services.AI;
 using Runtime.Services.GameLogic;
+using Runtime.Services.GameLogic.Score;
+using Runtime.Services.GameLogic.State;
+using Runtime.Services.GameLogic.Tiles;
+using Runtime.Services.GameLogic.Turn;
 using Runtime.Services.Validation;
 using UnityEngine;
 using Zenject;
+using IPersistenceService = Runtime.Infrastructure.Persistence.IPersistenceService;
 
 namespace Runtime.Installers
 {

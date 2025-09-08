@@ -1,8 +1,8 @@
 using Cysharp.Threading.Tasks;
 using Runtime.Infrastructure.AssetManagement;
 using Runtime.Infrastructure.Localization;
+using Runtime.Services.Navigation;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Zenject;
 
 namespace Runtime.Bootstrap
@@ -12,8 +12,8 @@ namespace Runtime.Bootstrap
         [SerializeField] private string _mainMenuSceneName = "MainMenu";
         
         [Inject] private IAssetService _assetService;
-       
         [Inject] private ILocalizationService _localizationService;
+        [Inject] private ISceneNavigator _sceneNavigator;
 
         private async void Start()
         {
@@ -44,7 +44,7 @@ namespace Runtime.Bootstrap
             try
             {
                 Debug.Log($"[InitializationBootstrap] Loading MainMenu scene: {_mainMenuSceneName}");
-                await SceneManager.LoadSceneAsync(_mainMenuSceneName).ToUniTask();
+                await _sceneNavigator.LoadSceneAsync(_mainMenuSceneName);
                 Debug.Log("[InitializationBootstrap] MainMenu scene loaded successfully");
             }
             catch (System.Exception exception)

@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using Runtime.Core.Architecture;
 using Runtime.Domain.Models;
 
-namespace Runtime.Services
+namespace Runtime.Services.GameLogic.Turn
 {
     public interface ITurnManager : IInitializableService, IDisposableService
     {

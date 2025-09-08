@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Runtime.Core.Architecture;
 using Runtime.Domain.Enums;
 using Runtime.Domain.Models;
-using Runtime.Domain.ValueObjects;
 using UnityEngine;
 
-namespace Runtime.Services
+namespace Runtime.Services.GameLogic.Score
 {
     public sealed class ScoreService : IScoreService
     {

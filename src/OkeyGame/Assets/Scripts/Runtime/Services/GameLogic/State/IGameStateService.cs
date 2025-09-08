@@ -4,11 +4,10 @@ using Runtime.Core.Architecture;
 using Runtime.Domain.Enums;
 using Runtime.Domain.Models;
 
-namespace Runtime.Services
+namespace Runtime.Services.GameLogic.State
 {
     public interface IGameStateService : IInitializableService, IDisposableService
     {
-        GameStateType CurrentGameStateType { get; }
         GameStateType CurrentStateType { get; }
         Player CurrentPlayer { get; }
         bool IsGameActive { get; }

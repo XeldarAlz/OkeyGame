@@ -1,7 +1,10 @@
 using Cysharp.Threading.Tasks;
-using Runtime.Services;
 using Runtime.Services.AI;
 using Runtime.Services.GameLogic;
+using Runtime.Services.GameLogic.Score;
+using Runtime.Services.GameLogic.State;
+using Runtime.Services.GameLogic.Tiles;
+using Runtime.Services.GameLogic.Turn;
 using UnityEngine;
 using Zenject;
 

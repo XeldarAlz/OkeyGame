@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Runtime.Core.Utilities;
@@ -8,7 +7,7 @@ using Runtime.Domain.ValueObjects;
 using UnityEngine;
 using Zenject;
 
-namespace Runtime.Services
+namespace Runtime.Services.GameLogic.Tiles
 {
     public sealed class TileService : ITileService
     {

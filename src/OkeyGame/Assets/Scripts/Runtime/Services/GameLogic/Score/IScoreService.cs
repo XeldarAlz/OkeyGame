@@ -5,7 +5,7 @@ using Runtime.Core.Architecture;
 using Runtime.Domain.Enums;
 using Runtime.Domain.Models;
 
-namespace Runtime.Services
+namespace Runtime.Services.GameLogic.Score
 {
     public interface IScoreService : IInitializableService
     {
