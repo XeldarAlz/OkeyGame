@@ -21,5 +21,6 @@ namespace Runtime.Services
         void SetTurnOrder(Player[] players);
         void SetCurrentPlayer(int playerIndex);
         void ResetTurnOrder();
+        int GetPlayerIndex(Player player);
     }
 }

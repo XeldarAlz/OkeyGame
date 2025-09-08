@@ -1,28 +1,28 @@
 using System;
 using Cysharp.Threading.Tasks;
 using Runtime.Core.Architecture;
+using Runtime.Domain.Enums;
 using Runtime.Domain.Models;
-using GameState = Runtime.Domain.Enums.GameState;
 
 namespace Runtime.Services
 {
     public interface IGameStateService : IInitializableService, IDisposableService
     {
-        GameState CurrentGameState { get; }
-        GameState CurrentState { get; }
+        GameStateType CurrentGameStateType { get; }
+        GameStateType CurrentStateType { get; }
         Player CurrentPlayer { get; }
         bool IsGameActive { get; }
 
-        event Action<GameState> OnStateChanged;
+        event Action<GameStateType> OnStateChanged;
         event Action<Player> OnPlayerTurnChanged;
-        event Action<GameState> OnGameStateUpdated;
+        event Action<GameStateType> OnGameStateUpdated;
 
         UniTask<bool> StartNewGameAsync(GameConfiguration configuration);
         UniTask<bool> EndGameAsync();
-        UniTask<bool> TransitionToStateAsync(GameState newState);
+        UniTask<bool> TransitionToStateAsync(GameStateType newStateType);
         UniTask<bool> NextPlayerTurnAsync();
 
-        void UpdateGameState(GameState newState);
+        void UpdateGameState(GameStateType newStateType);
         Player GetPlayerById(int playerId);
         bool IsPlayerTurn(int playerId);
     }

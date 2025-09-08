@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Runtime.Domain.Enums;
 using Runtime.Domain.ValueObjects;
 using UnityEngine;
-using GameState = Runtime.Domain.Enums.GameState;
 
 namespace Runtime.Domain.Models
 {
@@ -11,7 +10,7 @@ namespace Runtime.Domain.Models
     public sealed class GameState
     {
         [SerializeField] 
-        private Enums.GameState _currentState;
+        private GameStateType _currentStateType;
         
         [SerializeField] 
         private List<Player> _players;
@@ -34,8 +33,8 @@ namespace Runtime.Domain.Models
         [SerializeField] 
         private bool _gameEnded;
 
-        public Enums.GameState CurrentState => _currentState;
-        public IReadOnlyList<Player> Players => _players.AsReadOnly();
+        public Enums.GameStateType CurrentStateType => _currentStateType;
+        public List<Player> Players => _players;
         public int CurrentPlayerIndex => _currentPlayerIndex;
         public Player CurrentPlayer => _currentPlayerIndex >= 0 && _currentPlayerIndex < _players.Count ? _players[_currentPlayerIndex] : null;
         public TileData IndicatorTile => _indicatorTile;
@@ -50,7 +49,7 @@ namespace Runtime.Domain.Models
 
         public GameState()
         {
-            _currentState = Enums.GameState.None;
+            _currentStateType = Enums.GameStateType.None;
             _players = new List<Player>();
             _currentPlayerIndex = -1;
             _drawPile = new List<OkeyPiece>();
@@ -59,9 +58,9 @@ namespace Runtime.Domain.Models
             _gameEnded = false;
         }
 
-        public void SetState(Runtime.Domain.Enums.GameState newState)
+        public void SetState(Runtime.Domain.Enums.GameStateType newStateType)
         {
-            _currentState = newState;
+            _currentStateType = newStateType;
         }
 
         public void AddPlayer(Player player)
@@ -162,7 +161,38 @@ namespace Runtime.Domain.Models
         public void EndGame()
         {
             _gameEnded = true;
-            _currentState = Runtime.Domain.Enums.GameState.GameEnded;
+            _currentStateType = Runtime.Domain.Enums.GameStateType.GameEnded;
+        }
+        
+        public void Initialize(GameConfiguration configuration)
+        {
+            if (configuration == null)
+            {
+                return;
+            }
+            
+            _currentStateType = Runtime.Domain.Enums.GameStateType.Initializing;
+            _players.Clear();
+            _drawPile.Clear();
+            _discardPile.Clear();
+            _currentPlayerIndex = -1;
+            _roundNumber = 1;
+            _gameEnded = false;
+            
+            // Add players from configuration
+            int playerIndex = 0;
+            foreach (var playerConfig in configuration.PlayerConfigurations)
+            {
+                Player player = new Player(
+                    playerIndex, 
+                    playerConfig.Name, 
+                    playerConfig.PlayerType, 
+                    playerConfig.AIDifficulty
+                );
+                player.SetScore(configuration.StartingScore);
+                AddPlayer(player);
+                playerIndex++;
+            }
         }
 
         public void ResetForNewRound()

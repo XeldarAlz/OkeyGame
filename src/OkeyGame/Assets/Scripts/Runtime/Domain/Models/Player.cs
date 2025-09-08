@@ -10,8 +10,6 @@ namespace Runtime.Domain.Models
     public sealed class Player
     {
         [SerializeField] 
-        private int _id;
-        [SerializeField] 
         private int _score;
         
         [SerializeField] 
@@ -29,6 +27,8 @@ namespace Runtime.Domain.Models
         [SerializeField] 
         private List<OkeyPiece> _tiles;
 
+        private int _id;
+        
         public int Id => _id;
         public string Name => _name;
         public PlayerType PlayerType => _playerType;
@@ -124,6 +124,11 @@ namespace Runtime.Domain.Models
                 }
             }
             return false;
+        }
+
+        public List<OkeyPiece> GetTiles()
+        {
+            return _tiles;
         }
 
         public override string ToString()

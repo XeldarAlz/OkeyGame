@@ -1,12 +1,14 @@
 namespace Runtime.Domain.Enums
 {
-    public enum ValidationResult
+    public enum ValidationResult : byte
     {
-        Valid,
-        Invalid,
-        InvalidMove,
-        InvalidSet,
-        InvalidSequence,
-        InsufficientTiles
+        Valid = 0,
+        Invalid = 1,
+        InvalidMove = 2,
+        InvalidSet = 3,
+        InvalidSequence = 4,
+        InsufficientTiles = 5,
+        CreateFailure = 6,
+        CreateSuccess = 7
     }
 }

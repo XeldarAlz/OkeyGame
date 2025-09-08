@@ -1,6 +1,6 @@
 namespace Runtime.Domain.Enums
 {
-    public enum GameState
+    public enum GameStateType
     {
         None,
         Initializing,

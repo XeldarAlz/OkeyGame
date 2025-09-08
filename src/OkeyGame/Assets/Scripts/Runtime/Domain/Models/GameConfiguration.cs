@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Runtime.Domain.Enums;
 using UnityEngine;
 
 namespace Runtime.Domain.Models
@@ -36,6 +37,19 @@ namespace Runtime.Domain.Models
             _enableSound = true;
             _language = SystemLanguage.English;
             _playerConfigurations = new List<PlayerConfiguration>();
+        }
+        
+        public static GameConfiguration CreateDefault()
+        {
+            GameConfiguration config = new GameConfiguration(4, 20);
+            
+            // Add default player configurations
+            config.AddPlayerConfiguration(new PlayerConfiguration("Player 1", PlayerType.Human, AIDifficulty.Beginner));
+            config.AddPlayerConfiguration(new PlayerConfiguration("AI 1", PlayerType.AI, AIDifficulty.Beginner));
+            config.AddPlayerConfiguration(new PlayerConfiguration("AI 2", PlayerType.AI, AIDifficulty.Beginner));
+            config.AddPlayerConfiguration(new PlayerConfiguration("AI 3", PlayerType.AI, AIDifficulty.Beginner));
+            
+            return config;
         }
 
         public void AddPlayerConfiguration(PlayerConfiguration playerConfig)

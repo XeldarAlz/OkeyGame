@@ -8,15 +8,15 @@ namespace Runtime.Domain.ValueObjects
     {
         public readonly TurnAction ActionType;
 
-        public readonly TileData? TileData;
+        public readonly TileData TileData;
 
-        public readonly GridPosition? FromPosition;
-        public readonly GridPosition? ToPosition;
+        public readonly GridPosition FromPosition;
+        public readonly GridPosition ToPosition;
 
         public readonly int PlayerId;
 
-        public PlayerAction(TurnAction actionType, int playerId, TileData? tileData = null,
-            GridPosition? fromPosition = null, GridPosition? toPosition = null)
+        public PlayerAction(TurnAction actionType, int playerId, TileData tileData = default,
+            GridPosition fromPosition = default, GridPosition toPosition = default)
         {
             ActionType = actionType;
             PlayerId = playerId;
@@ -50,6 +50,11 @@ namespace Runtime.Domain.ValueObjects
         {
             return new PlayerAction(TurnAction.ShowIndicator, playerId, indicatorTile);
         }
+        
+        public static PlayerAction CreateDeclareWinAction(int playerId, WinType winType)
+        {
+            return new PlayerAction(TurnAction.DeclareWin, playerId);
+        }
 
         public bool Equals(PlayerAction other)
         {
@@ -80,9 +85,7 @@ namespace Runtime.Domain.ValueObjects
 
         public override string ToString()
         {
-            return $"Player{PlayerId}: {ActionType}" + (TileData.HasValue ? $" with {TileData.Value}" : "") +
-                   (FromPosition.HasValue ? $" from {FromPosition.Value}" : "") +
-                   (ToPosition.HasValue ? $" to {ToPosition.Value}" : "");
+            return $"Player{PlayerId}: {ActionType}";
         }
     }
 }

@@ -8,26 +8,25 @@ namespace Runtime.Domain.Models
     [Serializable]
     public sealed class OkeyPiece
     {
-        [SerializeField] 
-        private int _number;
-        
-        [SerializeField] 
-        private OkeyColor _color;
-        
-        [SerializeField] 
-        private OkeyPieceType _pieceType;
-        
-        [SerializeField] 
-        private bool _isJoker;
-        
-        [SerializeField] 
-        private int _uniqueId;
+        [SerializeField] private int _number;
+        [SerializeField] private int _uniqueId;
+
+        [SerializeField] private OkeyColor _color;
+
+        [SerializeField] private OkeyPieceType _pieceType;
+
+        [SerializeField] private bool _isJoker;
+
+
+        [SerializeField]
+        private GridPosition _gridPosition;
 
         public int Number => _number;
         public OkeyColor Color => _color;
         public OkeyPieceType PieceType => _pieceType;
         public bool IsJoker => _isJoker;
         public int UniqueId => _uniqueId;
+        public GridPosition GridPosition => _gridPosition;
 
         public TileData TileData => new TileData(_number, _color, _pieceType);
 
@@ -38,6 +37,7 @@ namespace Runtime.Domain.Models
             _pieceType = pieceType;
             _uniqueId = uniqueId;
             _isJoker = pieceType == OkeyPieceType.Joker || pieceType == OkeyPieceType.FalseJoker;
+            _gridPosition = default;
         }
 
         public bool CanFormSequenceWith(OkeyPiece other)
@@ -71,6 +71,7 @@ namespace Runtime.Domain.Models
             {
                 return _uniqueId == other._uniqueId;
             }
+
             return false;
         }
 
@@ -85,6 +86,11 @@ namespace Runtime.Domain.Models
         public override int GetHashCode()
         {
             return _uniqueId.GetHashCode();
+        }
+        
+        public void SetGridPosition(GridPosition position)
+        {
+            _gridPosition = position;
         }
     }
 }
