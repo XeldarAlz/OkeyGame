@@ -113,6 +113,11 @@ namespace Runtime.Domain.Models
             _jokerTile = CalculateJokerTile(indicatorTile);
         }
 
+        public void SetJokerTile(TileData jokerTile)
+        {
+            _jokerTile = jokerTile;
+        }
+
         public void SetDrawPile(List<OkeyPiece> drawPile)
         {
             _drawPile = drawPile ?? new List<OkeyPiece>();
@@ -127,6 +132,14 @@ namespace Runtime.Domain.Models
                 return drawnTile;
             }
             return null;
+        }
+
+        public void AddToDrawPile(OkeyPiece tile)
+        {
+            if (tile != null)
+            {
+                _drawPile.Add(tile);
+            }
         }
 
         public void AddToDiscardPile(OkeyPiece tile)
@@ -186,8 +199,7 @@ namespace Runtime.Domain.Models
                 Player player = new Player(
                     playerIndex, 
                     playerConfig.Name, 
-                    playerConfig.PlayerType, 
-                    playerConfig.AIDifficulty
+                    playerConfig.PlayerType
                 );
                 player.SetScore(configuration.StartingScore);
                 AddPlayer(player);

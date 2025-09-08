@@ -30,7 +30,7 @@ namespace Runtime.Infrastructure.AssetManagement
 
             try
             {
-                await Addressables.InitializeAsync().ToUniTask();
+                await Addressables.InitializeAsync();
                 _isInitialized = true;
                 Debug.Log("[AddressableAssetService] Initialized successfully");
             }
@@ -58,7 +58,9 @@ namespace Runtime.Infrastructure.AssetManagement
                 AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(key);
                 _handles.Add(handle);
 
-                T asset = await handle.ToUniTask();
+                // Directly await the AsyncOperationHandle
+                await handle;
+                T asset = handle.Result;
                 _loadedAssets[key] = asset;
 
                 return asset;

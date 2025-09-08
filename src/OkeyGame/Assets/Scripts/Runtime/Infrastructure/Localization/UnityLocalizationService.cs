@@ -26,7 +26,8 @@ namespace Runtime.Infrastructure.Localization
 
             try
             {
-                await LocalizationSettings.InitializationOperation.ToUniTask();
+                // Directly await the AsyncOperationHandle
+                await LocalizationSettings.InitializationOperation;
                 _isInitialized = true;
                 Debug.Log("[UnityLocalizationService] Initialized successfully");
             }
@@ -53,7 +54,10 @@ namespace Runtime.Infrastructure.Localization
             try
             {
                 AsyncOperationHandle<string> operation = localizedString.GetLocalizedStringAsync();
-                return await operation.ToUniTask();
+                await operation;
+               
+                string result = operation.Result;
+                return result;
             }
             catch (System.Exception exception)
             {

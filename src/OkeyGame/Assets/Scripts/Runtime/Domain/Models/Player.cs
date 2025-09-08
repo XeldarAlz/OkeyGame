@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Runtime.Domain.Models
 {
     [Serializable]
-    public sealed class Player
+    public class Player
     {
         [SerializeField] 
         private int _score;
@@ -19,9 +19,6 @@ namespace Runtime.Domain.Models
         private PlayerType _playerType;
         
         [SerializeField] 
-        private AIDifficulty _aiDifficulty;
-
-        [SerializeField] 
         private bool _isActive;
         
         [SerializeField] 
@@ -32,20 +29,18 @@ namespace Runtime.Domain.Models
         public int Id => _id;
         public string Name => _name;
         public PlayerType PlayerType => _playerType;
-        public AIDifficulty AIDifficulty => _aiDifficulty;
         public int Score => _score;
         public bool IsActive => _isActive;
         public bool IsAI => _playerType == PlayerType.AI;
         public bool IsHuman => _playerType == PlayerType.Human;
-        public IReadOnlyList<OkeyPiece> Tiles => _tiles.AsReadOnly();
+        public List<OkeyPiece> Tiles => _tiles;
         public int TileCount => _tiles.Count;
 
-        public Player(int id, string name, PlayerType playerType, AIDifficulty aiDifficulty = AIDifficulty.Beginner)
+        public Player(int id, string name, PlayerType playerType)
         {
             _id = id;
             _name = name;
             _playerType = playerType;
-            _aiDifficulty = aiDifficulty;
             _score = 20;
             _isActive = true;
             _tiles = new List<OkeyPiece>();
@@ -114,6 +109,11 @@ namespace Runtime.Domain.Models
             _isActive = active;
         }
 
+        public List<OkeyPiece> GetTiles()
+        {
+            return new List<OkeyPiece>(_tiles);
+        }
+
         public bool HasTile(TileData tileData)
         {
             for (int index = 0; index < _tiles.Count; index++)
@@ -124,11 +124,6 @@ namespace Runtime.Domain.Models
                 }
             }
             return false;
-        }
-
-        public List<OkeyPiece> GetTiles()
-        {
-            return _tiles;
         }
 
         public override string ToString()
