@@ -8,6 +8,7 @@ namespace Runtime.Domain.Enums
         GameStarted,
         PlayerTurn,
         AITurn,
+        RoundEnded,
         GameEnded,
         Paused
     }

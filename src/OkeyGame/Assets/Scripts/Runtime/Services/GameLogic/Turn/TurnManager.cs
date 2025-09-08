@@ -27,6 +27,7 @@ namespace Runtime.Services.GameLogic.Turn
         public int CurrentPlayerIndex => _currentPlayerIndex;
 
         public event Action<Player> OnTurnChanged;
+        public event Action<Player> OnPlayerTurnChanged;
         public event Action<Player> OnTurnStarted;
         public event Action<Player> OnTurnEnded;
 
@@ -154,6 +155,116 @@ namespace Runtime.Services.GameLogic.Turn
             }
         }
 
+        public async UniTask<bool> NextPlayerTurnAsync()
+        {
+            if (_turnOrder == null || _turnOrder.Count == 0)
+            {
+                Debug.LogWarning("[TurnManager] No players in turn order");
+                return false;
+            }
+
+            try
+            {
+                // End current turn if active
+                if (_isTurnActive)
+                {
+                    await EndTurnAsync();
+                }
+
+                // Move to next player
+                _currentPlayerIndex = (_currentPlayerIndex + 1) % _turnOrder.Count;
+                Player nextPlayer = _turnOrder[_currentPlayerIndex];
+
+                // Update current player and notify
+                Player previousPlayer = _currentPlayer;
+                _currentPlayer = nextPlayer;
+                
+                OnTurnChanged?.Invoke(_currentPlayer);
+                OnPlayerTurnChanged?.Invoke(_currentPlayer);
+                
+                // Start the new turn
+                await StartTurnAsync(_currentPlayer);
+                
+                Debug.Log($"[TurnManager] Player turn advanced from {previousPlayer?.Name} to {_currentPlayer.Name}");
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[TurnManager] Failed to advance to next player turn: {exception.Message}");
+                return false;
+            }
+        }
+
+        public async UniTask<bool> InitializePlayersAsync(List<Player> players)
+        {
+            if (players == null || players.Count == 0)
+            {
+                Debug.LogWarning("[TurnManager] Cannot initialize with null or empty player list");
+                return false;
+            }
+
+            try
+            {
+                // Reset current state
+                _turnOrder.Clear();
+                _currentPlayerIndex = -1;
+                _currentPlayer = null;
+                _isTurnActive = false;
+                
+                // Add all players to turn order
+                for (int index = 0; index < players.Count; index++)
+                {
+                    Player player = players[index];
+                    if (player != null)
+                    {
+                        _turnOrder.Add(player);
+                    }
+                }
+                
+                Debug.Log($"[TurnManager] Initialized with {_turnOrder.Count} players");
+                await UniTask.Yield();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[TurnManager] Failed to initialize players: {exception.Message}");
+                return false;
+            }
+        }
+
+        public async UniTask<bool> StartFirstTurnAsync()
+        {
+            if (_turnOrder == null || _turnOrder.Count == 0)
+            {
+                Debug.LogWarning("[TurnManager] Cannot start first turn with empty turn order");
+                return false;
+            }
+
+            try
+            {
+                // Set to first player in turn order
+                _currentPlayerIndex = 0;
+                _currentPlayer = _turnOrder[_currentPlayerIndex];
+                
+                // Start the turn
+                bool result = await StartTurnAsync(_currentPlayer);
+                
+                if (result)
+                {
+                    OnTurnChanged?.Invoke(_currentPlayer);
+                    OnPlayerTurnChanged?.Invoke(_currentPlayer);
+                    Debug.Log($"[TurnManager] First turn started with player: {_currentPlayer.Name}");
+                }
+                
+                return result;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[TurnManager] Failed to start first turn: {exception.Message}");
+                return false;
+            }
+        }
+
         public void SetTurnOrder(Player[] players)
         {
             if (players == null)
@@ -267,6 +378,11 @@ namespace Runtime.Services.GameLogic.Turn
             }
 
             return -1;
+        }
+
+        public Player GetCurrentPlayer()
+        {
+            return _currentPlayer;
         }
 
         public List<Player> GetTurnOrder()

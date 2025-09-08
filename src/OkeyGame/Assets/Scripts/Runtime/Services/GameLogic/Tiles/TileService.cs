@@ -19,16 +19,24 @@ namespace Runtime.Services.GameLogic.Tiles
         private const int FALSE_JOKERS_COUNT = 2;
         private const int TOTAL_TILES = 106; // 104 numbered tiles + 2 false jokers
 
+        private OkeyPiece _indicatorTile;
+        private List<OkeyPiece> _tilePile;
+        private List<OkeyPiece> _discardPile;
+
         [Inject]
         public TileService(IRandomProvider randomProvider)
         {
             _randomProvider = randomProvider;
             _allTiles = new List<OkeyPiece>();
+            _tilePile = new List<OkeyPiece>();
+            _discardPile = new List<OkeyPiece>();
         }
 
         public async UniTask InitializeAsync()
         {
             _allTiles.Clear();
+            _tilePile.Clear();
+            _discardPile.Clear();
             Debug.Log("[TileService] Initialized");
             await UniTask.Yield();
         }
@@ -65,6 +73,22 @@ namespace Runtime.Services.GameLogic.Tiles
             return tileSet;
         }
 
+        public async UniTask<List<OkeyPiece>> CreateFullTileSetAsync()
+        {
+            // Create a complete set of tiles
+            List<OkeyPiece> tileSet = await CreateTileSetAsync();
+            
+            // Initialize the tile pile and discard pile
+            _tilePile = new List<OkeyPiece>(tileSet);
+            _discardPile = new List<OkeyPiece>();
+            
+            // Shuffle the tiles
+            _tilePile = await ShuffleTilesAsync(_tilePile);
+            
+            await UniTask.Yield();
+            return tileSet;
+        }
+
         public async UniTask<List<OkeyPiece>> ShuffleTilesAsync(List<OkeyPiece> tiles)
         {
             if (tiles == null || tiles.Count == 0)
@@ -84,6 +108,27 @@ namespace Runtime.Services.GameLogic.Tiles
             }
             
             await UniTask.Yield();
+            return shuffledTiles;
+        }
+
+        public List<OkeyPiece> ShuffleTiles(List<OkeyPiece> tiles)
+        {
+            if (tiles == null || tiles.Count == 0)
+            {
+                return new List<OkeyPiece>();
+            }
+            
+            List<OkeyPiece> shuffledTiles = new List<OkeyPiece>(tiles);
+            
+            // Fisher-Yates shuffle algorithm
+            for (int index = shuffledTiles.Count - 1; index > 0; index--)
+            {
+                int randomIndex = _randomProvider.Range(0, index + 1);
+                OkeyPiece temp = shuffledTiles[index];
+                shuffledTiles[index] = shuffledTiles[randomIndex];
+                shuffledTiles[randomIndex] = temp;
+            }
+            
             return shuffledTiles;
         }
 
@@ -107,6 +152,73 @@ namespace Runtime.Services.GameLogic.Tiles
             
             await UniTask.Yield();
             return indicatorTileData;
+        }
+
+        public async UniTask<bool> SetIndicatorTileAsync(OkeyPiece indicatorTile)
+        {
+            if (indicatorTile == null)
+            {
+                return false;
+            }
+            
+            _indicatorTile = indicatorTile;
+            await UniTask.Yield();
+            return true;
+        }
+
+        public async UniTask<OkeyPiece> GetIndicatorTileAsync()
+        {
+            await UniTask.Yield();
+            return _indicatorTile;
+        }
+
+        public async UniTask<OkeyPiece> DrawTileFromPileAsync()
+        {
+            if (_tilePile == null || _tilePile.Count == 0)
+            {
+                Debug.LogWarning("[TileService] Cannot draw tile from empty pile");
+                return null;
+            }
+            
+            int lastIndex = _tilePile.Count - 1;
+            OkeyPiece drawnTile = _tilePile[lastIndex];
+            _tilePile.RemoveAt(lastIndex);
+            
+            await UniTask.Yield();
+            return drawnTile;
+        }
+
+        public async UniTask<OkeyPiece> DrawTileFromDiscardAsync()
+        {
+            if (_discardPile == null || _discardPile.Count == 0)
+            {
+                Debug.LogWarning("[TileService] Cannot draw tile from empty discard pile");
+                return null;
+            }
+            
+            int lastIndex = _discardPile.Count - 1;
+            OkeyPiece drawnTile = _discardPile[lastIndex];
+            _discardPile.RemoveAt(lastIndex);
+            
+            await UniTask.Yield();
+            return drawnTile;
+        }
+
+        public async UniTask<bool> AddTileToDiscardAsync(OkeyPiece tile)
+        {
+            if (tile == null)
+            {
+                return false;
+            }
+            
+            if (_discardPile == null)
+            {
+                _discardPile = new List<OkeyPiece>();
+            }
+            
+            _discardPile.Add(tile);
+            await UniTask.Yield();
+            return true;
         }
 
         public TileData CalculateJokerTile(TileData indicatorTile)

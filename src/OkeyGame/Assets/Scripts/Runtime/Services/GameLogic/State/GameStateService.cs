@@ -13,7 +13,6 @@ namespace Runtime.Services.GameLogic.State
         private GameState _currentGameState;
         private GameStateType _currentStateType;
 
-        public GameStateType CurrentGameStateType => _currentStateType;
         public GameStateType CurrentStateType => _currentStateType;
         public Player CurrentPlayer => _currentGameState?.CurrentPlayer;
         public bool IsGameActive => _currentStateType == GameStateType.PlayerTurn || _currentStateType == GameStateType.AITurn;
@@ -249,6 +248,11 @@ namespace Runtime.Services.GameLogic.State
             }
 
             return _currentGameState.CurrentPlayer.Id == playerId;
+        }
+
+        public GameState GetCurrentGameState()
+        {
+            return _currentGameState;
         }
 
         public void Dispose()

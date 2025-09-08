@@ -19,6 +19,7 @@ namespace Runtime.Domain.Models
         [SerializeField] private float _turnTimeLimit;
 
         [SerializeField] private SystemLanguage _language;
+        [SerializeField] private AIDifficulty _aiDifficulty;
 
         public int PlayerCount => _playerCount;
         public IReadOnlyList<PlayerConfiguration> PlayerConfigurations => _playerConfigurations.AsReadOnly();
@@ -27,6 +28,7 @@ namespace Runtime.Domain.Models
         public float TurnTimeLimit => _turnTimeLimit;
         public bool EnableSound => _enableSound;
         public SystemLanguage Language => _language;
+        public AIDifficulty AIDifficulty => _aiDifficulty;
 
         public GameConfiguration(int playerCount = 4, int startingScore = 20)
         {
@@ -36,6 +38,7 @@ namespace Runtime.Domain.Models
             _turnTimeLimit = 60f;
             _enableSound = true;
             _language = SystemLanguage.English;
+            _aiDifficulty = AIDifficulty.Beginner;
             _playerConfigurations = new List<PlayerConfiguration>();
         }
         

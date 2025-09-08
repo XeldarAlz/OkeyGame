@@ -24,5 +24,6 @@ namespace Runtime.Services.GameLogic.State
         void UpdateGameState(GameStateType newStateType);
         Player GetPlayerById(int playerId);
         bool IsPlayerTurn(int playerId);
+        GameState GetCurrentGameState();
     }
 }

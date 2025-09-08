@@ -1,3 +1,4 @@
+using Runtime.Domain.Enums;
 using Runtime.Infrastructure.Persistence;
 using Runtime.Services.AI;
 using Runtime.Services.GameLogic;
@@ -6,6 +7,7 @@ using Runtime.Services.GameLogic.State;
 using Runtime.Services.GameLogic.Tiles;
 using Runtime.Services.GameLogic.Turn;
 using Runtime.Services.Validation;
+using Runtime.Presentation.Controllers;
 using UnityEngine;
 using Zenject;
 using IPersistenceService = Runtime.Infrastructure.Persistence.IPersistenceService;
@@ -23,8 +25,10 @@ namespace Runtime.Installers
             Debug.Log("[GameInstaller] Installing all game services...");
             
             InstallCoreGameServices();
+            InstallGameFlowServices();
             InstallAIServices();
-            InstallFactories();
+            InstallControllers();
+            // InstallFactories();
             
             Debug.Log("[GameInstaller] All game services installed successfully");
         }
@@ -70,6 +74,35 @@ namespace Runtime.Installers
             Debug.Log("[GameInstaller] Core game services bound");
         }
 
+        private void InstallGameFlowServices()
+        {
+            // Phase 7 Game Flow Services
+            Container.Bind<IWinConditionService>()
+                .To<WinConditionService>()
+                .AsSingle()
+                .NonLazy();
+
+            Container.Bind<IScoreCalculationService>()
+                .To<ScoreCalculationService>()
+                .AsSingle()
+                .NonLazy();
+
+            Container.Bind<IGameStatePersistenceService>()
+                .To<GameStatePersistenceService>()
+                .AsSingle()
+                .NonLazy();
+
+            Container.Bind<GameInitializationService>()
+                .AsSingle()
+                .NonLazy();
+
+            Container.Bind<TurnBasedGameLoop>()
+                .AsSingle()
+                .NonLazy();
+
+            Debug.Log("[GameInstaller] Game flow services bound");
+        }
+
         private void InstallAIServices()
         {
             // AI Services
@@ -91,10 +124,27 @@ namespace Runtime.Installers
             Debug.Log("[GameInstaller] AI services bound");
         }
 
-        private void InstallFactories()
+        private void InstallControllers()
         {
-            // No factories needed for now
-            Debug.Log("[GameInstaller] No factories needed at this stage");
+            // Game Controllers
+            Container.Bind<GameController>()
+                .AsSingle()
+                .NonLazy();
+
+            Debug.Log("[GameInstaller] Controllers bound");
         }
+
+        // private void InstallFactories()
+        // {
+        //     // AI Player Factory
+        //     Container.Bind<IAIPlayerFactory>()
+        //         .To<AIPlayerFactory>()
+        //         .AsSingle()
+        //         .NonLazy();
+        //
+        //     Container.BindFactory<AIDifficulty, int, string, IAIPlayer, AIPlayerFactory>();
+        //
+        //     Debug.Log("[GameInstaller] Factories bound");
+        // }
     }
 }

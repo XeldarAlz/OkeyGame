@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Runtime.Core.Architecture;
 using Runtime.Domain.Models;
@@ -12,15 +13,20 @@ namespace Runtime.Services.GameLogic.Turn
         bool IsPlayerTurn(int playerId);
         
         event Action<Player> OnTurnChanged;
+        event Action<Player> OnPlayerTurnChanged;
         event Action<Player> OnTurnStarted;
         event Action<Player> OnTurnEnded;
         
         UniTask<bool> StartTurnAsync(Player player);
         UniTask<bool> EndTurnAsync();
         UniTask<bool> NextTurnAsync();
+        UniTask<bool> NextPlayerTurnAsync();
+        UniTask<bool> InitializePlayersAsync(List<Player> players);
+        UniTask<bool> StartFirstTurnAsync();
         void SetTurnOrder(Player[] players);
         void SetCurrentPlayer(int playerIndex);
         void ResetTurnOrder();
         int GetPlayerIndex(Player player);
+        Player GetCurrentPlayer();
     }
 }

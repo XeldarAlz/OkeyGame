@@ -1,10 +1,11 @@
 using Runtime.Domain.Enums;
+using Runtime.Domain.Models;
 using UnityEngine;
 using Zenject;
 
 namespace Runtime.Services.AI
 {
-    public class AIPlayerFactory : IFactory<AIDifficulty, int, string, IAIPlayer>
+    public sealed class AIPlayerFactory : IAIPlayerFactory, IFactory<AIDifficulty, int, string, IAIPlayer>
     {
         private readonly IInstantiator _instantiator;
         
@@ -13,23 +14,33 @@ namespace Runtime.Services.AI
             _instantiator = instantiator;
         }
 
-        public IAIPlayer Create(AIDifficulty difficulty, int playerId, string name)
+        public Player CreateAIPlayer(int playerId, string playerName, AIDifficulty difficulty)
         {
-            if (string.IsNullOrEmpty(name))
+            IAIPlayer aiPlayerInterface = CreateAIPlayerInterface(playerId, playerName, difficulty);
+            return aiPlayerInterface as Player ?? new Player(playerId, playerName, PlayerType.AI);
+        }
+
+        public IAIPlayer CreateAIPlayerInterface(int playerId, string playerName, AIDifficulty difficulty)
+        {
+            if (string.IsNullOrEmpty(playerName))
             {
-                name = $"AI Player {playerId}";
+                playerName = $"AI Player {playerId}";
             }
 
             IAIPlayer aiPlayer = difficulty switch
             {
-                AIDifficulty.Beginner => _instantiator.Instantiate<BeginnerAIPlayer>(new object[] { playerId, name }),
-                AIDifficulty.Intermediate => _instantiator.Instantiate<IntermediateAIPlayer>(new object[] { playerId, name }),
-                AIDifficulty.Advanced => _instantiator.Instantiate<AdvancedAIPlayer>(new object[] { playerId, name }),
-                _ => _instantiator.Instantiate<BeginnerAIPlayer>(new object[] { playerId, name })
+                AIDifficulty.Beginner => _instantiator.Instantiate<BeginnerAIPlayer>(new object[] { playerId, playerName }),
+                AIDifficulty.Intermediate => _instantiator.Instantiate<IntermediateAIPlayer>(new object[] { playerId, playerName }),
+                AIDifficulty.Advanced => _instantiator.Instantiate<AdvancedAIPlayer>(new object[] { playerId, playerName }),
+                _ => _instantiator.Instantiate<BeginnerAIPlayer>(new object[] { playerId, playerName })
             };
 
-            Debug.Log($"[AIPlayerFactory] Created {difficulty} AI Player: {name} (ID: {playerId})");
             return aiPlayer;
+        }
+
+        public IAIPlayer Create(AIDifficulty difficulty, int playerId, string name)
+        {
+            return CreateAIPlayerInterface(playerId, name, difficulty);
         }
     }
 }
