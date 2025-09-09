@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Runtime.Core.Configs;
 using Runtime.Domain.Enums;
 using Runtime.Domain.Models;
 using Runtime.Presentation.Views;
@@ -139,7 +140,7 @@ namespace Runtime.Presentation.Presenters
 
             try
             {
-                await _sceneNavigator.LoadSceneAsync("MainMenu");
+                await _sceneNavigator.LoadScene((int)SceneConfigs.MainMenuScene);
             }
             catch (System.Exception exception)
             {

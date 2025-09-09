@@ -1,95 +1,70 @@
 using Cysharp.Threading.Tasks;
+using Runtime.Core.Signals;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Zenject;
 
 namespace Runtime.Services.Navigation
 {
     public sealed class SceneNavigator : ISceneNavigator
     {
-        public async UniTask LoadSceneAsync(string sceneName)
+        [Inject]
+        private ISignalCenter _signalCenter;
+        
+        private CancellationTokenSource _cancellationTokenSource;
+
+        public UniTask LoadScene(int sceneIndex, LoadSceneMode mode = LoadSceneMode.Single)
         {
-            if (string.IsNullOrEmpty(sceneName))
+            return LoadSceneInternal(sceneIndex, mode);
+        }
+
+        public UniTask UnloadScene(int sceneIndex)
+        {
+            return UnloadSceneInternal(sceneIndex);
+        }
+
+        private async UniTask LoadSceneInternal(int sceneIndex, LoadSceneMode mode)
+        {
+            _signalCenter.Fire(new SceneLoadingStartedSignal());
+
+            AsyncOperation operation = SceneManager.LoadSceneAsync(sceneIndex, mode);
+            if (ReferenceEquals(operation, null))
             {
-                Debug.LogError("[SceneNavigator] Scene name cannot be null or empty");
+                _signalCenter.Fire(new SceneLoadingCompletedSignal());
                 return;
             }
 
-            try
+            operation.allowSceneActivation = true;
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            while (!operation.isDone)
             {
-                Debug.Log($"[SceneNavigator] Loading scene: {sceneName}");
-                await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
-                Debug.Log($"[SceneNavigator] Successfully loaded scene: {sceneName}");
+                float normalized = operation.progress < 0.9f ? operation.progress / 0.9f : 1f;
+                _signalCenter.Fire(new SceneLoadingProgressSignal(normalized));
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
             }
-            catch (System.Exception exception)
-            {
-                Debug.LogError($"[SceneNavigator] Failed to load scene '{sceneName}': {exception.Message}");
-                throw;
-            }
+
+            _signalCenter.Fire(new SceneLoadingProgressSignal(1f));
+            _signalCenter.Fire(new SceneLoadingCompletedSignal());
         }
 
-        public async UniTask LoadSceneAdditiveAsync(string sceneName)
+        private async UniTask UnloadSceneInternal(int sceneIndex)
         {
-            if (string.IsNullOrEmpty(sceneName))
+            AsyncOperation operation = SceneManager.UnloadSceneAsync(sceneIndex);
+            if (ReferenceEquals(operation, null))
             {
-                Debug.LogError("[SceneNavigator] Scene name cannot be null or empty");
                 return;
             }
 
-            try
-            {
-                Debug.Log($"[SceneNavigator] Loading scene additively: {sceneName}");
-                await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-                Debug.Log($"[SceneNavigator] Successfully loaded scene additively: {sceneName}");
-            }
-            catch (System.Exception exception)
-            {
-                Debug.LogError($"[SceneNavigator] Failed to load scene additively '{sceneName}': {exception.Message}");
-                throw;
-            }
-        }
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
 
-        public async UniTask UnloadSceneAsync(string sceneName)
-        {
-            if (string.IsNullOrEmpty(sceneName))
+            while (!operation.isDone)
             {
-                Debug.LogError("[SceneNavigator] Scene name cannot be null or empty");
-                return;
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
             }
-
-            if (!IsSceneLoaded(sceneName))
-            {
-                Debug.LogWarning($"[SceneNavigator] Scene '{sceneName}' is not loaded, cannot unload");
-                return;
-            }
-
-            try
-            {
-                Debug.Log($"[SceneNavigator] Unloading scene: {sceneName}");
-                await SceneManager.UnloadSceneAsync(sceneName);
-                Debug.Log($"[SceneNavigator] Successfully unloaded scene: {sceneName}");
-            }
-            catch (System.Exception exception)
-            {
-                Debug.LogError($"[SceneNavigator] Failed to unload scene '{sceneName}': {exception.Message}");
-                throw;
-            }
-        }
-
-        public string GetCurrentSceneName()
-        {
-            Scene activeScene = SceneManager.GetActiveScene();
-            return activeScene.name;
-        }
-
-        public bool IsSceneLoaded(string sceneName)
-        {
-            if (string.IsNullOrEmpty(sceneName))
-            {
-                return false;
-            }
-
-            Scene scene = SceneManager.GetSceneByName(sceneName);
-            return scene.isLoaded;
         }
     }
 }

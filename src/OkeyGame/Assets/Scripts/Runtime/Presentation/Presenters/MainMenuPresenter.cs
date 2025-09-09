@@ -1,3 +1,4 @@
+using Runtime.Core.Configs;
 using Runtime.Presentation.Views;
 using Runtime.Services.Navigation;
 using UnityEngine;
@@ -49,7 +50,7 @@ namespace Runtime.Presentation.Presenters
             
             try
             {
-                await _sceneNavigator.LoadSceneAsync("GameScene");
+                await _sceneNavigator.LoadScene((int)SceneConfigs.PlayScene);
             }
             catch (System.Exception exception)
             {

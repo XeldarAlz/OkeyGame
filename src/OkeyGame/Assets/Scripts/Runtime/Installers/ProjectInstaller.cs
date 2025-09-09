@@ -1,6 +1,9 @@
+using Runtime.Core.Signals;
 using Runtime.Core.Utilities;
 using Runtime.Infrastructure.AssetManagement;
 using Runtime.Infrastructure.Localization;
+using Runtime.Infrastructure.Persistence;
+using Runtime.Services.Audio;
 using Runtime.Services.Navigation;
 using UnityEngine;
 using Zenject;
@@ -24,11 +27,11 @@ namespace Runtime.Installers
             Container.Bind<IAssetService>().To<AddressableAssetService>().AsSingle().NonLazy();
             Container.Bind<ILocalizationService>().To<UnityLocalizationService>().AsSingle().NonLazy();
             Container.Bind<ISceneNavigator>().To<SceneNavigator>().AsSingle().NonLazy();
+            Container.Bind<IPersistenceService>().To<PersistenceService>().AsSingle().NonLazy();
+            Container.Bind<IAudioService>().To<AudioService>().AsSingle().NonLazy();
+            Container.Bind<ISignalCenter>().To<SignalCenter>().AsSingle().NonLazy();
             
             Debug.Log("[ProjectInstaller] Infrastructure services bound");
-            
-            // TODO: Bind IAudioService implementation when created
-            // TODO: Bind IPersistenceService implementation when created
         }
 
         private void InstallUtilityProviders()

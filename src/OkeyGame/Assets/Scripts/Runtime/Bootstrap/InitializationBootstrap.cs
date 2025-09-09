@@ -1,6 +1,9 @@
 using Cysharp.Threading.Tasks;
+using Runtime.Core.Signals;
 using Runtime.Infrastructure.AssetManagement;
 using Runtime.Infrastructure.Localization;
+using Runtime.Infrastructure.Persistence;
+using Runtime.Services.Audio;
 using Runtime.Services.Navigation;
 using UnityEngine;
 using Zenject;
@@ -14,6 +17,9 @@ namespace Runtime.Bootstrap
         [Inject] private IAssetService _assetService;
         [Inject] private ILocalizationService _localizationService;
         [Inject] private ISceneNavigator _sceneNavigator;
+        [Inject] private IAudioService _audioService;
+        [Inject] private IPersistenceService _persistenceService;
+        [Inject] private ISignalCenter _signalCenter;
 
         private async void Start()
         {
@@ -29,9 +35,10 @@ namespace Runtime.Bootstrap
                 
                 await _assetService.InitializeAsync();
                 await _localizationService.InitializeAsync();
+                await _audioService.InitializeAsync();
+                await _persistenceService.InitializeAsync();
                 
                 Debug.Log("[InitializationBootstrap] Infrastructure services initialized successfully");
-                Debug.Log("[InitializationBootstrap] Ready for Phase 3 AI Player System and beyond");
             }
             catch (System.Exception exception)
             {
@@ -44,7 +51,27 @@ namespace Runtime.Bootstrap
             try
             {
                 Debug.Log($"[InitializationBootstrap] Loading MainMenu scene: {_mainMenuSceneName}");
-                await _sceneNavigator.LoadSceneAsync(_mainMenuSceneName);
+                
+                // Fire signal to load main menu with loading screen
+                _signalCenter.Fire(new LoadSceneRequestSignal(_mainMenuSceneName, true, "Loading Main Menu..."));
+                
+                // Wait for scene load completion
+                var tcs = new UniTaskCompletionSource<bool>();
+                
+                void OnSceneLoadCompleted(SceneLoadCompletedSignal signal)
+                {
+                    if (signal.SceneName == _mainMenuSceneName)
+                    {
+                        _signalCenter.Unsubscribe<SceneLoadCompletedSignal>(OnSceneLoadCompleted);
+                        tcs.TrySetResult(true);
+                    }
+                }
+                
+                _signalCenter.Subscribe<SceneLoadCompletedSignal>(OnSceneLoadCompleted);
+                
+                // Wait for the scene to load
+                await tcs.Task;
+                
                 Debug.Log("[InitializationBootstrap] MainMenu scene loaded successfully");
             }
             catch (System.Exception exception)

@@ -1,14 +1,11 @@
 using Cysharp.Threading.Tasks;
-using Runtime.Core.Architecture;
+using UnityEngine.SceneManagement;
 
 namespace Runtime.Services.Navigation
 {
-    public interface ISceneNavigator : IService
+    public interface ISceneNavigator
     {
-        UniTask LoadSceneAsync(string sceneName);
-        UniTask LoadSceneAdditiveAsync(string sceneName);
-        UniTask UnloadSceneAsync(string sceneName);
-        string GetCurrentSceneName();
-        bool IsSceneLoaded(string sceneName);
+        UniTask LoadScene(int sceneIndex, LoadSceneMode mode = LoadSceneMode.Single);
+        UniTask UnloadScene(int sceneIndex);
     }
 }
