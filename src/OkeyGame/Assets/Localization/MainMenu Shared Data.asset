@@ -20,7 +20,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 205104603136
-    m_Key: main_menu_play_button
+    m_Key: main_menu_singleplayer_button
     m_Metadata:
       m_Items: []
   - m_Id: 320271802368
@@ -29,6 +29,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 369185775616
     m_Key: main_menu_quit_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3597965189120
+    m_Key: main_menu_multiplayer_button
     m_Metadata:
       m_Items: []
   m_Metadata:

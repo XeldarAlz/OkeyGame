@@ -1,20 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using TMPro;
 
 namespace Runtime.Presentation.Views
 {
     public sealed class MainMenuView : BaseView
     {
-        [Header("Main Menu Buttons")]
+        [Header("Main Menu Buttons")] 
         [SerializeField] private Button _singlePlayerButton;
+
         [SerializeField] private Button _multiplayerButton;
         [SerializeField] private Button _settingsButton;
         [SerializeField] private Button _exitButton;
 
-        [Header("UI Panels")]
+        [Header("UI Panels")] 
         [SerializeField] private GameObject _mainPanel;
         [SerializeField] private GameObject _settingsPanel;
+
+        [Header("Texts")] 
+        [SerializeField] private TMP_Text _versionText;
 
         public event Action OnSinglePlayerClicked;
         public event Action OnMultiplayerClicked;
@@ -31,74 +36,30 @@ namespace Runtime.Presentation.Views
 
         private void SubscribeToButtonEvents()
         {
-            if (_singlePlayerButton != null)
-            {
-                _singlePlayerButton.onClick.AddListener(() => OnSinglePlayerClicked?.Invoke());
-            }
-
-            if (_multiplayerButton != null)
-            {
-                _multiplayerButton.onClick.AddListener(() => OnMultiplayerClicked?.Invoke());
-            }
-
-            if (_settingsButton != null)
-            {
-                _settingsButton.onClick.AddListener(() => OnSettingsClicked?.Invoke());
-            }
-
-            if (_exitButton != null)
-            {
-                _exitButton.onClick.AddListener(() => OnExitClicked?.Invoke());
-            }
-        }
-
-        private void UnsubscribeFromButtonEvents()
-        {
-            if (_singlePlayerButton != null)
-            {
-                _singlePlayerButton.onClick.RemoveAllListeners();
-            }
-
-            if (_multiplayerButton != null)
-            {
-                _multiplayerButton.onClick.RemoveAllListeners();
-            }
-
-            if (_settingsButton != null)
-            {
-                _settingsButton.onClick.RemoveAllListeners();
-            }
-
-            if (_exitButton != null)
-            {
-                _exitButton.onClick.RemoveAllListeners();
-            }
+            _singlePlayerButton?.onClick.AddListener(() => OnSinglePlayerClicked?.Invoke());
+            _multiplayerButton?.onClick.AddListener(() => OnMultiplayerClicked?.Invoke());
+            _settingsButton?.onClick.AddListener(() => OnSettingsClicked?.Invoke());
+            _exitButton?.onClick.AddListener(() => OnExitClicked?.Invoke());
         }
 
         public void ShowMainPanel()
         {
-            if (_mainPanel != null)
-            {
-                _mainPanel.SetActive(true);
-            }
-
-            if (_settingsPanel != null)
-            {
-                _settingsPanel.SetActive(false);
-            }
+            _mainPanel?.SetActive(true);
+            _settingsPanel?.SetActive(false);
         }
 
         public void ShowSettingsPanel()
         {
-            if (_mainPanel != null)
-            {
-                _mainPanel.SetActive(false);
-            }
+            _mainPanel?.SetActive(false);
+            _settingsPanel?.SetActive(true);
+        }
 
-            if (_settingsPanel != null)
-            {
-                _settingsPanel.SetActive(true);
-            }
+        private void UnsubscribeFromButtonEvents()
+        {
+            _singlePlayerButton?.onClick.RemoveAllListeners();
+            _multiplayerButton?.onClick.RemoveAllListeners();
+            _settingsButton?.onClick.RemoveAllListeners();
+            _exitButton?.onClick.RemoveAllListeners();
         }
 
         protected override void Cleanup()

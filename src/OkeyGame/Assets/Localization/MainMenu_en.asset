@@ -34,6 +34,10 @@ MonoBehaviour:
     m_Localized: Quit
     m_Metadata:
       m_Items: []
+  - m_Id: 3597965189120
+    m_Localized: Play multi player
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

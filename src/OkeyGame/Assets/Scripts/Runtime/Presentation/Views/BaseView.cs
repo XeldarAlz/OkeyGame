@@ -4,7 +4,7 @@ namespace Runtime.Presentation.Views
 {
     public abstract class BaseView : MonoBehaviour
     {
-        protected bool _isInitialized = false;
+        private bool _isInitialized;
 
         protected virtual void Awake()
         {
