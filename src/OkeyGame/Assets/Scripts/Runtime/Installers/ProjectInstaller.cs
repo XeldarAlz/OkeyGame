@@ -6,7 +6,6 @@ using Runtime.Infrastructure.Persistence;
 using Runtime.Services.Audio;
 using Runtime.Services.Navigation;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Zenject;
 
 namespace Runtime.Installers

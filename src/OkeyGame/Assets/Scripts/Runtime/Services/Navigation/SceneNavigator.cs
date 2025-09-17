@@ -10,7 +10,7 @@ namespace Runtime.Services.Navigation
 {
     public sealed class SceneNavigator : ISceneNavigator
     {
-        private const float MIN_LOADING_DURATION_SEC = 3f;
+        private const float MIN_LOADING_DURATION_SEC = 2f;
 
         [Inject]
         private ISignalCenter _signalCenter;

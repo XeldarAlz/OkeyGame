@@ -304,8 +304,9 @@ GameObject:
   - component: {fileID: 734155613}
   - component: {fileID: 734155612}
   - component: {fileID: 734155611}
+  - component: {fileID: 734155615}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: LoadingScreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -394,6 +395,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &734155615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 734155610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81afc4368e3554117bc9d28ce566e484, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _loadingCanvasGroup: {fileID: 794475056}
+  _progressBar: {fileID: 1928758233}
+  _loadingText: {fileID: 2000760066}
+  _fadeInDuration: 0.1
+  _fadeOutDuration: 0.1
 --- !u!1 &794475051
 GameObject:
   m_ObjectHideFlags: 0
@@ -406,7 +424,6 @@ GameObject:
   - component: {fileID: 794475054}
   - component: {fileID: 794475053}
   - component: {fileID: 794475056}
-  - component: {fileID: 794475055}
   m_Layer: 5
   m_Name: LoadingPanel
   m_TagString: Untagged
@@ -473,23 +490,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 794475051}
   m_CullTransparentMesh: 1
---- !u!114 &794475055
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 794475051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81afc4368e3554117bc9d28ce566e484, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _loadingCanvasGroup: {fileID: 794475056}
-  _progressBar: {fileID: 1928758233}
-  _loadingText: {fileID: 2000760066}
-  _fadeInDuration: 0.1
-  _fadeOutDuration: 0.1
 --- !u!225 &794475056
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -972,6 +972,7 @@ GameObject:
   - component: {fileID: 2000760065}
   - component: {fileID: 2000760067}
   - component: {fileID: 2000760066}
+  - component: {fileID: 2000760068}
   m_Layer: 5
   m_Name: LoadingText
   m_TagString: Untagged
@@ -1097,6 +1098,46 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2000760064}
   m_CullTransparentMesh: 1
+--- !u!114 &2000760068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000760064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:55e6b2426db0d49788ecd18bc47b57c1
+    m_TableEntryReference:
+      m_KeyId: 4348436480
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2000760066}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &2005102471
 GameObject:
   m_ObjectHideFlags: 0
