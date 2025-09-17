@@ -55,13 +55,13 @@ namespace Runtime.Infrastructure.Localization
             {
                 AsyncOperationHandle<string> operation = localizedString.GetLocalizedStringAsync();
                 await operation;
-               
                 string result = operation.Result;
                 return result;
             }
             catch (System.Exception exception)
             {
-                Debug.LogError($"[UnityLocalizationService] Failed to get localized text for key '{key}': {exception.Message}");
+                Debug.LogError(
+                    $"[UnityLocalizationService] Failed to get localized text for key '{key}': {exception.Message}");
                 return key;
             }
         }
@@ -76,7 +76,8 @@ namespace Runtime.Infrastructure.Localization
             }
             catch (System.Exception exception)
             {
-                Debug.LogError($"[UnityLocalizationService] Failed to format localized text for key '{key}': {exception.Message}");
+                Debug.LogError(
+                    $"[UnityLocalizationService] Failed to format localized text for key '{key}': {exception.Message}");
                 return localizedText;
             }
         }
@@ -90,6 +91,7 @@ namespace Runtime.Infrastructure.Localization
             }
 
             Locale locale = LocalizationSettings.AvailableLocales.GetLocale(language);
+            
             if (locale != null)
             {
                 LocalizationSettings.SelectedLocale = locale;
@@ -109,6 +111,7 @@ namespace Runtime.Infrastructure.Localization
             }
 
             string languageCode = LocalizationSettings.SelectedLocale.Identifier.CultureInfo.TwoLetterISOLanguageName;
+            
             return languageCode switch
             {
                 "en" => SystemLanguage.English,
@@ -136,6 +139,7 @@ namespace Runtime.Infrastructure.Localization
             }
 
             Locale locale = LocalizationSettings.AvailableLocales.GetLocale(language);
+            
             if (locale != null)
             {
                 LocalizationSettings.SelectedLocale = locale;

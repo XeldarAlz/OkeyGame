@@ -7,15 +7,12 @@ namespace Runtime.Domain.ValueObjects
     public sealed class GridCell
     {
         private readonly GridPosition _position;
-        
         private OkeyPiece _occupyingPiece;
-        
         private bool _isHighlighted;
         private bool _isValidDropTarget;
-
+       
         public GridPosition Position => _position;
         public OkeyPiece OccupyingPiece => _occupyingPiece;
-        
         public bool IsOccupied => _occupyingPiece != null;
         public bool IsEmpty => _occupyingPiece == null;
         public bool IsHighlighted => _isHighlighted;

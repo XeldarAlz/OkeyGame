@@ -19,16 +19,15 @@ namespace Runtime.Presentation.Presenters
         private readonly ITileService _tileService;
         private readonly IGameRulesService _gameRulesService;
         private readonly ITurnManager _turnManager;
-
+        
         private Player _currentPlayer;
         private bool _isPlayerTurn;
         private OkeyPiece _selectedTile;
-
+        
         public event Action<OkeyPiece, GridPosition> OnTilePlacedInRack;
         public event Action<OkeyPiece, GridPosition, GridPosition> OnTileMovedInRack;
         public event Action<OkeyPiece> OnTileSelectedFromRack;
         public event Action<List<OkeyPiece>> OnRackUpdated;
-
         public Player CurrentPlayer => _currentPlayer;
         public bool IsPlayerTurn => _isPlayerTurn;
         public OkeyPiece SelectedTile => _selectedTile;
@@ -40,7 +39,7 @@ namespace Runtime.Presentation.Presenters
         }
 
         [Inject]
-        public PlayerRackPresenter(IGameStateService gameStateService, ITileService tileService, 
+        public PlayerRackPresenter(IGameStateService gameStateService, ITileService tileService,
             IGameRulesService gameRulesService, ITurnManager turnManager)
         {
             _gameStateService = gameStateService;
@@ -58,8 +57,7 @@ namespace Runtime.Presentation.Presenters
         protected override void SubscribeToEvents()
         {
             base.SubscribeToEvents();
-
-            if (_view != null)
+            if (!ReferenceEquals(_view, null))
             {
                 _view.OnTilePlaced += HandleTilePlaced;
                 _view.OnTileMoved += HandleTileMoved;
@@ -68,12 +66,12 @@ namespace Runtime.Presentation.Presenters
                 _view.OnRackCleared += HandleRackCleared;
             }
 
-            if (_gameStateService != null)
+            if (!ReferenceEquals(_gameStateService, null))
             {
                 _gameStateService.OnStateChanged += HandleGameStateChanged;
             }
 
-            if (_turnManager != null)
+            if (!ReferenceEquals(_turnManager, null))
             {
                 _turnManager.OnTurnChanged += HandleTurnChanged;
             }
@@ -81,7 +79,7 @@ namespace Runtime.Presentation.Presenters
 
         protected override void UnsubscribeFromEvents()
         {
-            if (_view != null)
+            if (!ReferenceEquals(_view, null))
             {
                 _view.OnTilePlaced -= HandleTilePlaced;
                 _view.OnTileMoved -= HandleTileMoved;
@@ -90,12 +88,12 @@ namespace Runtime.Presentation.Presenters
                 _view.OnRackCleared -= HandleRackCleared;
             }
 
-            if (_gameStateService != null)
+            if (!ReferenceEquals(_gameStateService, null))
             {
                 _gameStateService.OnStateChanged -= HandleGameStateChanged;
             }
 
-            if (_turnManager != null)
+            if (!ReferenceEquals(_turnManager, null))
             {
                 _turnManager.OnTurnChanged -= HandleTurnChanged;
             }
@@ -113,12 +111,13 @@ namespace Runtime.Presentation.Presenters
 
         public async UniTask SetPlayerAsync(Player player)
         {
-            if (player == null)
+            if (ReferenceEquals(player, null))
             {
                 return;
             }
 
             _currentPlayer = player;
+           
             await UpdateRackDisplayAsync();
         }
 
@@ -131,7 +130,7 @@ namespace Runtime.Presentation.Presenters
 
             await _view.AddTileAsync(tile, preferredPosition);
             
-            if (_currentPlayer != null)
+            if (!ReferenceEquals(_currentPlayer, null))
             {
                 _currentPlayer.AddTile(tile);
                 OnRackUpdated?.Invoke(GetRackTiles());
@@ -147,7 +146,7 @@ namespace Runtime.Presentation.Presenters
 
             await _view.RemoveTileAsync(tile);
             
-            if (_currentPlayer != null)
+            if (!ReferenceEquals(_currentPlayer, null))
             {
                 _currentPlayer.RemoveTile(tile);
                 OnRackUpdated?.Invoke(GetRackTiles());
@@ -192,7 +191,7 @@ namespace Runtime.Presentation.Presenters
 
         public bool ValidateRackArrangement()
         {
-            if (_currentPlayer == null || _gameRulesService == null)
+            if (ReferenceEquals(_currentPlayer, null) || ReferenceEquals(_gameRulesService, null))
             {
                 return false;
             }
@@ -204,7 +203,7 @@ namespace Runtime.Presentation.Presenters
 
         public List<List<OkeyPiece>> GetValidSets()
         {
-            if (_currentPlayer == null || _gameRulesService == null)
+            if (ReferenceEquals(_currentPlayer, null) || ReferenceEquals(_gameRulesService, null))
             {
                 return new List<List<OkeyPiece>>();
             }
@@ -216,27 +215,27 @@ namespace Runtime.Presentation.Presenters
 
         public async UniTask ArrangeRackOptimallyAsync()
         {
-            if (_currentPlayer == null || _view == null)
+            if (ReferenceEquals(_currentPlayer, null) || ReferenceEquals(_view, null))
             {
                 return;
             }
 
             List<OkeyPiece> rackTiles = GetRackTiles();
             List<OkeyPiece> arrangedTiles = ArrangeForOptimalDisplay(rackTiles);
-            
             _view.SetTiles(arrangedTiles);
             await UniTask.Yield(); // Allow UI to update
         }
 
         public async UniTask SortRackByColorAsync()
         {
-            if (_currentPlayer == null || _view == null)
+            if (ReferenceEquals(_currentPlayer, null) || ReferenceEquals(_view, null))
             {
                 return;
             }
 
             List<OkeyPiece> rackTiles = GetRackTiles();
-            rackTiles.Sort((a, b) => 
+            
+            rackTiles.Sort((a, b) =>
             {
                 int colorCompare = a.Color.CompareTo(b.Color);
                 return colorCompare != 0 ? colorCompare : a.Number.CompareTo(b.Number);
@@ -254,13 +253,15 @@ namespace Runtime.Presentation.Presenters
             }
 
             List<OkeyPiece> rackTiles = GetRackTiles();
-            rackTiles.Sort((a, b) => 
+            
+            rackTiles.Sort((a, b) =>
             {
                 int numberCompare = a.Number.CompareTo(b.Number);
                 return numberCompare != 0 ? numberCompare : a.Color.CompareTo(b.Color);
             });
             
             _view.SetTiles(rackTiles);
+            
             await UniTask.Yield();
         }
 
@@ -309,7 +310,6 @@ namespace Runtime.Presentation.Presenters
 
             List<OkeyPiece> rackTiles = GetRackTiles();
             _view.SetTiles(rackTiles);
-            
             OnRackUpdated?.Invoke(rackTiles);
             await UniTask.Yield();
         }
@@ -330,7 +330,6 @@ namespace Runtime.Presentation.Presenters
                 // Jokers and special tiles at the end
                 if (a.IsJoker && !b.IsJoker) return 1;
                 if (!a.IsJoker && b.IsJoker) return -1;
-                
                 if (a.PieceType == OkeyPieceType.FalseJoker && b.PieceType != OkeyPieceType.FalseJoker) return 1;
                 if (a.PieceType != OkeyPieceType.FalseJoker && b.PieceType == OkeyPieceType.FalseJoker) return -1;
 
@@ -338,7 +337,6 @@ namespace Runtime.Presentation.Presenters
                 int colorCompare = a.Color.CompareTo(b.Color);
                 return colorCompare != 0 ? colorCompare : a.Number.CompareTo(b.Number);
             });
-
             return arrangedTiles;
         }
 
@@ -359,7 +357,7 @@ namespace Runtime.Presentation.Presenters
 
         private void HandleTileDeselected(OkeyPiece tile)
         {
-            if (_selectedTile == tile)
+            if (ReferenceEquals(_selectedTile, tile))
             {
                 DeselectTile();
             }
@@ -368,7 +366,8 @@ namespace Runtime.Presentation.Presenters
         private void HandleRackCleared()
         {
             _selectedTile = null;
-            if (_currentPlayer != null)
+            
+            if (!ReferenceEquals(_currentPlayer, null))
             {
                 OnRackUpdated?.Invoke(new List<OkeyPiece>());
             }
@@ -377,23 +376,27 @@ namespace Runtime.Presentation.Presenters
         private void HandleGameStateChanged(GameStateType newState)
         {
             _isPlayerTurn = newState == GameStateType.PlayerTurn;
-            
-            if (!_isPlayerTurn)
+
+            if (_isPlayerTurn)
             {
-                DeselectTile();
-                ClearHighlights();
+                return;
             }
+            
+            DeselectTile();
+            ClearHighlights();
         }
 
         private void HandleTurnChanged(Player newCurrentPlayer)
         {
-            _isPlayerTurn = newCurrentPlayer == _currentPlayer && !newCurrentPlayer.IsAI;
+            _isPlayerTurn = ReferenceEquals(newCurrentPlayer, _currentPlayer) && !newCurrentPlayer.IsAI;
             
-            if (!_isPlayerTurn)
+            if (_isPlayerTurn)
             {
-                DeselectTile();
-                ClearHighlights();
+                return;
             }
+            
+            DeselectTile();
+            ClearHighlights();
         }
 
         public override void Dispose()

@@ -9,34 +9,23 @@ namespace Runtime.Domain.Models
     [Serializable]
     public sealed class GameState
     {
-        [SerializeField] 
-        private GameStateType _currentStateType;
-        
-        [SerializeField] 
-        private List<Player> _players;
-        
-        [SerializeField] 
-        private int _currentPlayerIndex;
-        [SerializeField] 
-        private int _roundNumber;
-        
-        [SerializeField] 
-        private TileData _indicatorTile;
-        [SerializeField] 
-        private TileData _jokerTile;
-        
-        [SerializeField] 
-        private List<OkeyPiece> _drawPile;
-        [SerializeField] 
-        private List<OkeyPiece> _discardPile;
-
-        [SerializeField] 
-        private bool _gameEnded;
-
+        [SerializeField] private GameStateType _currentStateType;
+        [SerializeField] private List<Player> _players;
+        [SerializeField] private int _currentPlayerIndex;
+        [SerializeField] private int _roundNumber;
+        [SerializeField] private TileData _indicatorTile;
+        [SerializeField] private TileData _jokerTile;
+        [SerializeField] private List<OkeyPiece> _drawPile;
+        [SerializeField] private List<OkeyPiece> _discardPile;
+        [SerializeField] private bool _gameEnded;
+     
         public Enums.GameStateType CurrentStateType => _currentStateType;
         public List<Player> Players => _players;
         public int CurrentPlayerIndex => _currentPlayerIndex;
-        public Player CurrentPlayer => _currentPlayerIndex >= 0 && _currentPlayerIndex < _players.Count ? _players[_currentPlayerIndex] : null;
+
+        public Player CurrentPlayer =>
+            _currentPlayerIndex >= 0 && _currentPlayerIndex < _players.Count ? _players[_currentPlayerIndex] : null;
+
         public TileData IndicatorTile => _indicatorTile;
         public TileData JokerTile => _jokerTile;
         public IReadOnlyList<OkeyPiece> DrawPile => _drawPile.AsReadOnly();
@@ -88,6 +77,7 @@ namespace Runtime.Domain.Models
                     return _players[index];
                 }
             }
+
             return null;
         }
 
@@ -125,13 +115,14 @@ namespace Runtime.Domain.Models
 
         public OkeyPiece DrawFromPile()
         {
-            if (_drawPile.Count > 0)
+            if (_drawPile.Count <= 0)
             {
-                OkeyPiece drawnTile = _drawPile[0];
-                _drawPile.RemoveAt(0);
-                return drawnTile;
+                return null;
             }
-            return null;
+            
+            OkeyPiece drawnTile = _drawPile[0];
+            _drawPile.RemoveAt(0);
+            return drawnTile;
         }
 
         public void AddToDrawPile(OkeyPiece tile)
@@ -157,13 +148,14 @@ namespace Runtime.Domain.Models
 
         public OkeyPiece TakeFromDiscardPile()
         {
-            if (_discardPile.Count > 0)
+            if (_discardPile.Count <= 0)
             {
-                OkeyPiece topTile = _discardPile[_discardPile.Count - 1];
-                _discardPile.RemoveAt(_discardPile.Count - 1);
-                return topTile;
+                return null;
             }
-            return null;
+            
+            OkeyPiece topTile = _discardPile[_discardPile.Count - 1];
+            _discardPile.RemoveAt(_discardPile.Count - 1);
+            return topTile;
         }
 
         public void IncrementRound()
@@ -176,14 +168,14 @@ namespace Runtime.Domain.Models
             _gameEnded = true;
             _currentStateType = Runtime.Domain.Enums.GameStateType.GameEnded;
         }
-        
+
         public void Initialize(GameConfiguration configuration)
         {
             if (configuration == null)
             {
                 return;
             }
-            
+
             _currentStateType = Runtime.Domain.Enums.GameStateType.Initializing;
             _players.Clear();
             _drawPile.Clear();
@@ -191,16 +183,13 @@ namespace Runtime.Domain.Models
             _currentPlayerIndex = -1;
             _roundNumber = 1;
             _gameEnded = false;
-            
-            // Add players from configuration
+
             int playerIndex = 0;
-            foreach (var playerConfig in configuration.PlayerConfigurations)
+
+            for (int index = 0; index < configuration.PlayerConfigurations.Count; index++)
             {
-                Player player = new Player(
-                    playerIndex, 
-                    playerConfig.Name, 
-                    playerConfig.PlayerType
-                );
+                PlayerConfiguration playerConfig = configuration.PlayerConfigurations[index];
+                Player player = new Player(playerIndex, playerConfig.Name, playerConfig.PlayerType);
                 player.SetScore(configuration.StartingScore);
                 AddPlayer(player);
                 playerIndex++;

@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Runtime.Core.SignalCenter;
 using Runtime.Core.Signals;
 using TMPro;
 using UnityEngine;
@@ -12,8 +13,7 @@ namespace Runtime.Presentation.Views
         [Header("UI References")]
         [SerializeField] private CanvasGroup _loadingCanvasGroup;
         [SerializeField] private Slider _progressBar;
-        [SerializeField] private TextMeshProUGUI _loadingText;
-        [SerializeField] private GameObject _loadingSpinner;
+        [SerializeField] private TMP_Text _loadingText;
         
         [Header("Animation Settings")]
         [SerializeField] private float _fadeInDuration = 0.1f;
@@ -35,6 +35,11 @@ namespace Runtime.Presentation.Views
         
         private void OnEnable()
         {
+            if (_signalCenter == null)
+            {
+                Debug.LogError("SignalCenter is not initialized.");
+                return;
+            }
             SubscribeToSignals();
         }
         
@@ -86,14 +91,12 @@ namespace Runtime.Presentation.Views
             
             _isVisible = false;
             _loadingCanvasGroup.blocksRaycasts = false;
-            _loadingSpinner.SetActive(false);
         }
         
         private void HideImmediate()
         {
             _loadingCanvasGroup.alpha = 0f;
             _loadingCanvasGroup.blocksRaycasts = false;
-            _loadingSpinner.SetActive(false);
             _isVisible = false;
         }
         
@@ -102,14 +105,6 @@ namespace Runtime.Presentation.Views
             if (!ReferenceEquals(_progressBar, null))
             {
                 _progressBar.value = Mathf.Clamp01(progress);
-            }
-        }
-        
-        private void SetLoadingText(string text)
-        {
-            if (!ReferenceEquals(_loadingText, null))
-            {
-                _loadingText.text = text;
             }
         }
         
@@ -126,6 +121,14 @@ namespace Runtime.Presentation.Views
             }
             
             canvasGroup.alpha = endAlpha;
+        }
+        
+        private void SetLoadingText(string text)
+        {
+            if (!ReferenceEquals(_loadingText, null))
+            {
+                _loadingText.text = text;
+            }
         }
         
         private void UnsubscribeFromSignals()

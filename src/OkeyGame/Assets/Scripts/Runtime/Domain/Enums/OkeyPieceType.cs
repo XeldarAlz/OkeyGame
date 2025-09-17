@@ -1,9 +1,9 @@
 namespace Runtime.Domain.Enums
 {
-    public enum OkeyPieceType
+    public enum OkeyPieceType : byte
     {
-        Normal,
-        Joker,
-        FalseJoker
+        Normal = 0,
+        Joker = 1,
+        FalseJoker = 2
     }
 }

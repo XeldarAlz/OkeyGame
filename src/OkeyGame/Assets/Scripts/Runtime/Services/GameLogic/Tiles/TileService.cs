@@ -46,7 +46,7 @@ namespace Runtime.Services.GameLogic.Tiles
             List<OkeyPiece> tileSet = new List<OkeyPiece>();
             
             // Create numbered tiles (1-13) for each color, with 2 copies each
-            OkeyColor[] colors = { OkeyColor.Red, OkeyColor.Yellow, OkeyColor.Black, OkeyColor.Green };
+            OkeyColor[] colors = { OkeyColor.Red, OkeyColor.Yellow, OkeyColor.Blue, OkeyColor.Black };
             
             for (int colorIndex = 0; colorIndex < colors.Length; colorIndex++)
             {

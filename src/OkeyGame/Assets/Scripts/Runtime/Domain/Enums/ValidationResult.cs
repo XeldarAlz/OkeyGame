@@ -8,7 +8,5 @@ namespace Runtime.Domain.Enums
         InvalidSet = 3,
         InvalidSequence = 4,
         InsufficientTiles = 5,
-        CreateFailure = 6,
-        CreateSuccess = 7
     }
 }

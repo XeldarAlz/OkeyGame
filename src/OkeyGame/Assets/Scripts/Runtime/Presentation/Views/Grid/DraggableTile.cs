@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Runtime.Domain.Enums;
 using Runtime.Domain.ValueObjects;
@@ -10,7 +11,7 @@ namespace Runtime.Presentation.Views.Grid
 {
     public sealed class DraggableTile : MonoBehaviour
     {
-        [Header("Drag Configuration")]
+        [Header("Drag Configuration")] 
         [SerializeField] private float _dragThreshold = 10f;
         [SerializeField] private float _snapAnimationDuration = 0.2f;
         [SerializeField] private LayerMask _dragLayer = -1;
@@ -19,7 +20,7 @@ namespace Runtime.Presentation.Views.Grid
         [SerializeField] private float _dragElevation = 50f;
         [SerializeField] private Vector3 _dragScale = Vector3.one * 1.1f;
         [SerializeField] private CanvasGroup _canvasGroup;
-
+        
         private Camera _mainCamera;
         private Canvas _parentCanvas;
         private RackGridManager _gridManager;
@@ -29,17 +30,15 @@ namespace Runtime.Presentation.Views.Grid
         private GridPosition _currentGridPosition;
         private DragState _currentDragState;
         private OkeyPiece _associatedPiece;
-
         private Vector2 _initialPointerPosition;
         private Vector2 _currentPointerPosition;
         private bool _isDragStarted;
         private bool _isPointerDown;
-
+        
         public event Action<DraggableTile, DragState> OnDragStateChanged;
         public event Action<DraggableTile, GridPosition> OnTileDropped;
         public event Action<DraggableTile> OnTileSelected;
         public event Action<DraggableTile> OnTileDeselected;
-
         public DragState CurrentDragState => _currentDragState;
         public GridPosition CurrentGridPosition => _currentGridPosition;
         public OkeyPiece AssociatedPiece => _associatedPiece;
@@ -81,11 +80,9 @@ namespace Runtime.Presentation.Views.Grid
 
             _isPointerDown = true;
             _isDragStarted = false;
-            
             Vector2 screenPosition = GetPointerScreenPosition();
             _initialPointerPosition = screenPosition;
             _currentPointerPosition = screenPosition;
-
             SetDragState(DragState.Selected);
             OnTileSelected?.Invoke(this);
         }
@@ -98,7 +95,7 @@ namespace Runtime.Presentation.Views.Grid
             }
 
             _isPointerDown = false;
-
+            
             if (_currentDragState == DragState.Dragging)
             {
                 HandleDrop();
@@ -119,9 +116,8 @@ namespace Runtime.Presentation.Views.Grid
 
             Vector2 screenPosition = GetPointerScreenPosition();
             _currentPointerPosition = screenPosition;
-
             float dragDistance = Vector2.Distance(_initialPointerPosition, _currentPointerPosition);
-
+            
             if (!_isDragStarted && dragDistance > _dragThreshold)
             {
                 StartDrag();
@@ -169,12 +165,14 @@ namespace Runtime.Presentation.Views.Grid
             }
 
             // Remove from current grid position
-            if (_gridManager != null)
+            if (_gridManager == null)
             {
-                _gridManager.TryRemovePiece(_currentGridPosition, out OkeyPiece removedPiece);
-                _gridManager.ClearAllHighlights();
-                HighlightValidDropZones();
+                return;
             }
+            
+            _gridManager.TryRemovePiece(_currentGridPosition, out OkeyPiece removedPiece);
+            _gridManager.ClearAllHighlights();
+            HighlightValidDropZones();
         }
 
         private void UpdateDragPosition()
@@ -184,26 +182,21 @@ namespace Runtime.Presentation.Views.Grid
                 return;
             }
 
-            Vector3 worldPosition = _mainCamera.ScreenToWorldPoint(new Vector3(
-                _currentPointerPosition.x, 
-                _currentPointerPosition.y, 
-                _mainCamera.WorldToScreenPoint(transform.position).z));
-
+            Vector3 worldPosition = _mainCamera.ScreenToWorldPoint(new Vector3(_currentPointerPosition.x,
+                _currentPointerPosition.y, _mainCamera.WorldToScreenPoint(transform.position).z));
             transform.position = worldPosition;
 
             // Update hover state for grid cells
-            if (_gridManager != null)
+            if (_gridManager == null)
             {
-                GridPosition nearestPosition = _gridManager.GetGridPosition(worldPosition);
-                if (_gridManager.IsPositionAvailable(nearestPosition))
-                {
-                    SetDragState(DragState.Hovering);
-                }
-                else
-                {
-                    SetDragState(DragState.Dragging);
-                }
+                return;
             }
+            
+            GridPosition nearestPosition = _gridManager.GetGridPosition(worldPosition);
+
+            SetDragState(_gridManager.IsPositionAvailable(nearestPosition) 
+                ? DragState.Hovering 
+                : DragState.Dragging);
         }
 
         private void HandleDrop()
@@ -216,7 +209,7 @@ namespace Runtime.Presentation.Views.Grid
 
             Vector3 worldPosition = transform.position;
             GridPosition targetPosition = _gridManager.GetNearestValidPosition(worldPosition);
-
+            
             if (_gridManager.IsPositionAvailable(targetPosition))
             {
                 DropAtPosition(targetPosition);
@@ -235,13 +228,13 @@ namespace Runtime.Presentation.Views.Grid
             if (_gridManager.TryPlacePiece(_associatedPiece, targetPosition))
             {
                 _currentGridPosition = targetPosition;
-                
+
                 // Animate to final position
                 await _gridManager.AnimateToPositionAsync(transform, targetPosition, _snapAnimationDuration);
-                
+
                 // Reset visual state
                 ResetVisualState();
-                
+
                 // Return to original parent
                 if (_originalParent != null)
                 {
@@ -250,10 +243,10 @@ namespace Runtime.Presentation.Views.Grid
 
                 SetDragState(DragState.Dropped);
                 OnTileDropped?.Invoke(this, targetPosition);
-                
+
                 // Clear highlights
                 _gridManager.ClearAllHighlights();
-                
+
                 // Final state
                 SetDragState(DragState.None);
             }
@@ -278,13 +271,12 @@ namespace Runtime.Presentation.Views.Grid
                 // Fallback to original world position
                 Vector3 startPosition = transform.position;
                 float elapsedTime = 0f;
-
+                
                 while (elapsedTime < _snapAnimationDuration)
                 {
                     elapsedTime += Time.deltaTime;
                     float progress = elapsedTime / _snapAnimationDuration;
                     float easedProgress = 1f - Mathf.Pow(1f - progress, 3f);
-                    
                     transform.position = Vector3.Lerp(startPosition, _originalPosition, easedProgress);
                     await UniTask.Yield();
                 }
@@ -294,7 +286,7 @@ namespace Runtime.Presentation.Views.Grid
 
             // Reset visual state
             ResetVisualState();
-            
+
             // Return to original parent
             if (_originalParent != null)
             {
@@ -313,6 +305,7 @@ namespace Runtime.Presentation.Views.Grid
         private void ResetVisualState()
         {
             transform.localScale = _originalScale;
+            
             if (_canvasGroup != null)
             {
                 _canvasGroup.alpha = 1f;
@@ -326,8 +319,10 @@ namespace Runtime.Presentation.Views.Grid
                 return;
             }
 
-            foreach (GridPosition position in _gridManager.GetAvailablePositions())
+            List<GridPosition> list = _gridManager.GetAvailablePositions();
+            for (int gridIndex = 0; gridIndex < list.Count; gridIndex++)
             {
+                GridPosition position = list[gridIndex];
                 _gridManager.SetValidDropTarget(position, true);
                 _gridManager.HighlightCell(position, true);
             }
@@ -342,19 +337,21 @@ namespace Runtime.Presentation.Views.Grid
 
             DragState previousState = _currentDragState;
             _currentDragState = newState;
-            
             OnDragStateChanged?.Invoke(this, newState);
         }
 
         public void SetGridPosition(GridPosition newPosition)
         {
             _currentGridPosition = newPosition;
-            if (_gridManager != null)
+            
+            if (_gridManager == null)
             {
-                Vector3 worldPosition = _gridManager.GetWorldPosition(newPosition);
-                transform.position = worldPosition;
-                _originalPosition = worldPosition;
+                return;
             }
+            
+            Vector3 worldPosition = _gridManager.GetWorldPosition(newPosition);
+            transform.position = worldPosition;
+            _originalPosition = worldPosition;
         }
 
         public async UniTask MoveToGridPositionAsync(GridPosition targetPosition, float duration = 0.3f)
@@ -375,12 +372,15 @@ namespace Runtime.Presentation.Views.Grid
         public void ForceSetPosition(GridPosition position)
         {
             _currentGridPosition = position;
-            if (_gridManager != null)
+            
+            if (_gridManager == null)
             {
-                Vector3 worldPosition = _gridManager.GetWorldPosition(position);
-                transform.position = worldPosition;
-                _originalPosition = worldPosition;
+                return;
             }
+            
+            Vector3 worldPosition = _gridManager.GetWorldPosition(position);
+            transform.position = worldPosition;
+            _originalPosition = worldPosition;
         }
 
         private void OnDestroy()

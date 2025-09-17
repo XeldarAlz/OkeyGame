@@ -1,10 +1,10 @@
 namespace Runtime.Domain.Enums
 {
-    public enum OkeyColor
+    public enum OkeyColor : byte
     {
-        Red,
-        Yellow,
-        Black,
-        Green
+        Red = 0,
+        Yellow = 1,
+        Blue = 2,
+        Black = 3
     }
 }

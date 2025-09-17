@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Runtime.Core.Signals;
 using System.Threading;
+using Runtime.Core.SignalCenter;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
@@ -9,9 +10,11 @@ namespace Runtime.Services.Navigation
 {
     public sealed class SceneNavigator : ISceneNavigator
     {
+        private const float MIN_LOADING_DURATION_SEC = 3f;
+
         [Inject]
         private ISignalCenter _signalCenter;
-        
+
         private CancellationTokenSource _cancellationTokenSource;
 
         public UniTask LoadScene(int sceneIndex, LoadSceneMode mode = LoadSceneMode.Single)
@@ -23,7 +26,7 @@ namespace Runtime.Services.Navigation
         {
             return UnloadSceneInternal(sceneIndex);
         }
-
+        
         private async UniTask LoadSceneInternal(int sceneIndex, LoadSceneMode mode)
         {
             _signalCenter.Fire(new SceneLoadingStartedSignal());
@@ -35,13 +38,38 @@ namespace Runtime.Services.Navigation
                 return;
             }
 
-            operation.allowSceneActivation = true;
+            operation.allowSceneActivation = false;
+
+            CancellationTokenSource existing = _cancellationTokenSource;
+            if (!ReferenceEquals(existing, null))
+            {
+                existing.Cancel();
+                existing.Dispose();
+            }
             _cancellationTokenSource = new CancellationTokenSource();
+
+            float elapsed = 0f;
+
+            while (operation.progress < 0.9f || elapsed < MIN_LOADING_DURATION_SEC)
+            {
+                elapsed += Time.unscaledDeltaTime;
+
+                float opNormalized = operation.progress < 0.9f ? operation.progress / 0.9f : 1f;
+                float timeNormalized = elapsed / MIN_LOADING_DURATION_SEC;
+                float visibleNormalized = timeNormalized < opNormalized ? timeNormalized : opNormalized;
+                if (visibleNormalized > 0.99f)
+                {
+                    visibleNormalized = 0.99f;
+                }
+
+                _signalCenter.Fire(new SceneLoadingProgressSignal(visibleNormalized));
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
+            }
+
+            operation.allowSceneActivation = true;
 
             while (!operation.isDone)
             {
-                float normalized = operation.progress < 0.9f ? operation.progress / 0.9f : 1f;
-                _signalCenter.Fire(new SceneLoadingProgressSignal(normalized));
                 await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
             }
 
@@ -57,8 +85,12 @@ namespace Runtime.Services.Navigation
                 return;
             }
 
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
+            CancellationTokenSource existing = _cancellationTokenSource;
+            if (!ReferenceEquals(existing, null))
+            {
+                existing.Cancel();
+                existing.Dispose();
+            }
             _cancellationTokenSource = new CancellationTokenSource();
 
             while (!operation.isDone)

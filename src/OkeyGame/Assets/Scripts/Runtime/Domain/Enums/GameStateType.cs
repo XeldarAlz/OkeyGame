@@ -1,15 +1,15 @@
 namespace Runtime.Domain.Enums
 {
-    public enum GameStateType
+    public enum GameStateType : byte
     {
-        None,
-        Initializing,
-        WaitingForPlayers,
-        GameStarted,
-        PlayerTurn,
-        AITurn,
-        RoundEnded,
-        GameEnded,
-        Paused
+        None = 0,
+        Initializing = 1,
+        WaitingForPlayers = 2,
+        GameStarted = 3,
+        PlayerTurn = 4,
+        AITurn = 5,
+        RoundEnded = 6,
+        GameEnded = 7,
+        Paused = 8
     }
 }

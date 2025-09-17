@@ -1,4 +1,5 @@
 using Runtime.Presentation.Presenters;
+using Runtime.Presentation.Views;
 using UnityEngine;
 using Zenject;
 
@@ -17,8 +18,8 @@ namespace Runtime.Installers
 
         private void InstallPresenters()
         {
-            Container.BindInterfacesAndSelfTo<MainMenuPresenter>().AsSingle();
-            Container.BindInterfacesAndSelfTo<GameBoardPresenter>().AsSingle();
+            Container.Bind<MainMenuView>().FromComponentInHierarchy().AsSingle();
+            Container.BindInterfacesAndSelfTo<MainMenuPresenter>().AsSingle().NonLazy();
             
             Debug.Log("[UIInstaller] Presenters bound");
         }

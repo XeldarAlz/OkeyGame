@@ -10,14 +10,10 @@ namespace Runtime.Domain.Models
     {
         [SerializeField] private int _playerCount;
         [SerializeField] private int _startingScore;
-
         [SerializeField] private List<PlayerConfiguration> _playerConfigurations;
-
         [SerializeField] private bool _enableTimer;
         [SerializeField] private bool _enableSound;
-
         [SerializeField] private float _turnTimeLimit;
-
         [SerializeField] private SystemLanguage _language;
         [SerializeField] private AIDifficulty _aiDifficulty;
 
@@ -41,17 +37,16 @@ namespace Runtime.Domain.Models
             _aiDifficulty = AIDifficulty.Beginner;
             _playerConfigurations = new List<PlayerConfiguration>();
         }
-        
+
         public static GameConfiguration CreateDefault()
         {
             GameConfiguration config = new GameConfiguration(4, 20);
-            
+
             // Add default player configurations
             config.AddPlayerConfiguration(new PlayerConfiguration("Player 1", PlayerType.Human, AIDifficulty.Beginner));
             config.AddPlayerConfiguration(new PlayerConfiguration("AI 1", PlayerType.AI, AIDifficulty.Beginner));
             config.AddPlayerConfiguration(new PlayerConfiguration("AI 2", PlayerType.AI, AIDifficulty.Beginner));
             config.AddPlayerConfiguration(new PlayerConfiguration("AI 3", PlayerType.AI, AIDifficulty.Beginner));
-            
             return config;
         }
 

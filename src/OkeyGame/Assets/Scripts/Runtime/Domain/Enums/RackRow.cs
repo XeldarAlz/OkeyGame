@@ -1,8 +1,8 @@
 namespace Runtime.Domain.Enums
 {
-    public enum RackRow
+    public enum RackRow : byte
     {
-        Top,
-        Bottom
+        Top = 0,
+        Bottom = 1
     }
 }

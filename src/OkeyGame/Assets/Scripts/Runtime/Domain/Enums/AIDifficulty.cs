@@ -1,9 +1,9 @@
 namespace Runtime.Domain.Enums
 {
-    public enum AIDifficulty
+    public enum AIDifficulty : byte
     {
-        Beginner,
-        Intermediate,
-        Advanced
+        Beginner = 0,
+        Intermediate = 1,
+        Advanced = 2
     }
 }

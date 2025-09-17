@@ -32,17 +32,15 @@ namespace Runtime.Presentation.Views.Grid
         [Header("Color Mapping")]
         [SerializeField] private Color _redColor = Color.red;
         [SerializeField] private Color _yellowColor = Color.yellow;
+        [SerializeField] private Color _blueColor = Color.blue;
         [SerializeField] private Color _blackColor = Color.black;
-        [SerializeField] private Color _greenColor = Color.green;
         [SerializeField] private Color _jokerColor = Color.magenta;
-
+        
         private OkeyPiece _associatedPiece;
         private DragState _currentVisualState;
         private DraggableTile _draggableTile;
         private bool _isAnimating;
-
         public event Action<TileView, DragState> OnVisualStateChanged;
-
         public OkeyPiece AssociatedPiece => _associatedPiece;
         public DragState CurrentVisualState => _currentVisualState;
         public bool IsAnimating => _isAnimating;
@@ -50,17 +48,17 @@ namespace Runtime.Presentation.Views.Grid
         [Serializable]
         public sealed class TileVisualConfig
         {
-            [Header("Colors")]
+            [Header("Colors")] 
             public Color backgroundColor = Color.white;
             public Color borderColor = Color.black;
             public Color textColor = Color.black;
-
-            [Header("Scale and Alpha")]
+            
+            [Header("Scale and Alpha")] 
             public Vector3 scale = Vector3.one;
             public float alpha = 1f;
             public float borderWidth = 2f;
-
-            [Header("Effects")]
+            
+            [Header("Effects")] 
             public bool glowEffect = false;
             public Color glowColor = Color.white;
             public float glowIntensity = 1f;
@@ -129,8 +127,8 @@ namespace Runtime.Presentation.Views.Grid
             {
                 OkeyColor.Red => _redColor,
                 OkeyColor.Yellow => _yellowColor,
-                OkeyColor.Black => _blackColor,
-                OkeyColor.Green => _greenColor,
+                OkeyColor.Blue => _blackColor,
+                OkeyColor.Black => _blueColor,
                 _ => _jokerColor
             };
         }
@@ -149,8 +147,8 @@ namespace Runtime.Presentation.Views.Grid
 
             DragState previousState = _currentVisualState;
             _currentVisualState = newState;
-
             TileVisualConfig targetConfig = GetConfigForState(newState);
+            
             if (targetConfig != null)
             {
                 await AnimateToConfigAsync(targetConfig);
@@ -187,9 +185,8 @@ namespace Runtime.Presentation.Views.Grid
             Color initialTextColor = _numberText != null ? _numberText.color : Color.black;
             Vector3 initialScale = transform.localScale;
             float initialAlpha = _canvasGroup != null ? _canvasGroup.alpha : 1f;
-
             float elapsedTime = 0f;
-
+            
             while (elapsedTime < _stateTransitionDuration)
             {
                 elapsedTime += Time.deltaTime;
@@ -199,7 +196,8 @@ namespace Runtime.Presentation.Views.Grid
                 // Animate colors
                 if (_backgroundImage != null)
                 {
-                    _backgroundImage.color = Color.Lerp(initialBackgroundColor, targetConfig.backgroundColor, easedTime);
+                    _backgroundImage.color =
+                        Color.Lerp(initialBackgroundColor, targetConfig.backgroundColor, easedTime);
                 }
 
                 if (_borderImage != null)
@@ -241,7 +239,6 @@ namespace Runtime.Presentation.Views.Grid
             }
 
             transform.localScale = targetConfig.scale;
-
             if (_canvasGroup != null)
             {
                 _canvasGroup.alpha = targetConfig.alpha;
@@ -286,7 +283,7 @@ namespace Runtime.Presentation.Views.Grid
             }
 
             transform.localScale = config.scale;
-
+            
             if (_canvasGroup != null)
             {
                 _canvasGroup.alpha = config.alpha;
@@ -307,26 +304,26 @@ namespace Runtime.Presentation.Views.Grid
 
         public void SetInteractable(bool interactable)
         {
-            if (_canvasGroup != null)
+            if (_canvasGroup == null)
             {
-                _canvasGroup.interactable = interactable;
-                _canvasGroup.blocksRaycasts = interactable;
+                return;
             }
+            
+            _canvasGroup.interactable = interactable;
+            _canvasGroup.blocksRaycasts = interactable;
         }
 
         public async UniTask PlayPulseAnimationAsync(float duration = 0.5f, float intensity = 0.1f)
         {
             Vector3 originalScale = transform.localScale;
             Vector3 targetScale = originalScale * (1f + intensity);
-
             float elapsedTime = 0f;
-
+            
             while (elapsedTime < duration)
             {
                 elapsedTime += Time.deltaTime;
                 float normalizedTime = elapsedTime / duration;
                 float pulseValue = Mathf.Sin(normalizedTime * Mathf.PI * 2f);
-                
                 transform.localScale = Vector3.Lerp(originalScale, targetScale, pulseValue * intensity);
                 await UniTask.Yield();
             }
@@ -338,18 +335,14 @@ namespace Runtime.Presentation.Views.Grid
         {
             Vector3 originalPosition = transform.localPosition;
             float elapsedTime = 0f;
-
+            
             while (elapsedTime < duration)
             {
                 elapsedTime += Time.deltaTime;
                 float normalizedTime = elapsedTime / duration;
                 float shakeIntensity = intensity * (1f - normalizedTime);
-
-                Vector3 randomOffset = new Vector3(
-                    UnityEngine.Random.Range(-shakeIntensity, shakeIntensity),
-                    UnityEngine.Random.Range(-shakeIntensity, shakeIntensity),
-                    0f);
-
+                Vector3 randomOffset = new Vector3(UnityEngine.Random.Range(-shakeIntensity, shakeIntensity),
+                    UnityEngine.Random.Range(-shakeIntensity, shakeIntensity), 0f);
                 transform.localPosition = originalPosition + randomOffset;
                 await UniTask.Yield();
             }
@@ -383,29 +376,11 @@ namespace Runtime.Presentation.Views.Grid
                 _stateTransitionDuration = 0f;
             }
 
-            // Ensure we have default configs
-            if (_normalConfig == null)
-            {
-                _normalConfig = new TileVisualConfig();
-            }
+            _normalConfig ??= new TileVisualConfig();
 
-            if (_selectedConfig == null)
-            {
-                _selectedConfig = new TileVisualConfig
-                {
-                    backgroundColor = Color.cyan,
-                    scale = Vector3.one * 1.05f
-                };
-            }
+            _selectedConfig ??= new TileVisualConfig { backgroundColor = Color.cyan, scale = Vector3.one * 1.05f };
 
-            if (_draggingConfig == null)
-            {
-                _draggingConfig = new TileVisualConfig
-                {
-                    alpha = 0.8f,
-                    scale = Vector3.one * 1.1f
-                };
-            }
+            _draggingConfig ??= new TileVisualConfig { alpha = 0.8f, scale = Vector3.one * 1.1f };
         }
     }
 }

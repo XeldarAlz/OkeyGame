@@ -1,9 +1,9 @@
 namespace Runtime.Domain.Enums
 {
-    public enum WinType
+    public enum WinType : byte
     {
-        Normal,
-        Pairs,
-        Okey
+        Normal = 0,
+        Pairs = 1,
+        Okey = 2
     }
 }

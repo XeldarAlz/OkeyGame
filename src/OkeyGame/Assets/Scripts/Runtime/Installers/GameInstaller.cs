@@ -1,4 +1,3 @@
-using Runtime.Domain.Enums;
 using Runtime.Infrastructure.Persistence;
 using Runtime.Services.AI;
 using Runtime.Services.GameLogic;
@@ -14,10 +13,6 @@ using IPersistenceService = Runtime.Infrastructure.Persistence.IPersistenceServi
 
 namespace Runtime.Installers
 {
-    /// <summary>
-    /// GameInstaller - Unified installer for all game services
-    /// This installer is attached to SceneContext in game scenes
-    /// </summary>
     public sealed class GameInstaller : MonoInstaller
     {
         public override void InstallBindings()

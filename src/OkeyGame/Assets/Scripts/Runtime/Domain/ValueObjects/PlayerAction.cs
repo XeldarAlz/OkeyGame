@@ -7,12 +7,9 @@ namespace Runtime.Domain.ValueObjects
     public readonly struct PlayerAction : IEquatable<PlayerAction>
     {
         public readonly TurnAction ActionType;
-
         public readonly TileData TileData;
-
         public readonly GridPosition FromPosition;
         public readonly GridPosition ToPosition;
-
         public readonly int PlayerId;
 
         public PlayerAction(TurnAction actionType, int playerId, TileData tileData = default,
@@ -50,7 +47,7 @@ namespace Runtime.Domain.ValueObjects
         {
             return new PlayerAction(TurnAction.ShowIndicator, playerId, indicatorTile);
         }
-        
+
         public static PlayerAction CreateDeclareWinAction(int playerId, WinType winType)
         {
             return new PlayerAction(TurnAction.DeclareWin, playerId);

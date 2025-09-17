@@ -8,11 +8,9 @@ namespace Runtime.Domain.Models
     public sealed class PlayerConfiguration
     {
         [SerializeField] private string _name;
-
         [SerializeField] private PlayerType _playerType;
-
         [SerializeField] private AIDifficulty _aiDifficulty;
-
+      
         public string Name => _name;
         public PlayerType PlayerType => _playerType;
         public AIDifficulty AIDifficulty => _aiDifficulty;

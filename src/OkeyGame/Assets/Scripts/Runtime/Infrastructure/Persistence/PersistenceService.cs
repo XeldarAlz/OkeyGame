@@ -10,16 +10,16 @@ namespace Runtime.Infrastructure.Persistence
 {
     public sealed class PersistenceService : IPersistenceService
     {
+        private const string GAME_STATE_PREFIX = "gamestate_";
+        private const string PLAYER_DATA_PREFIX = "player_";
+        private const string FILE_EXTENSION = ".json";
+
         private readonly string _persistentDataPath;
         private readonly string _gameStateFolder;
         private readonly string _playerDataFolder;
         private readonly string _configurationFile;
         private readonly string _scoresFile;
         private readonly string _settingsFile;
-        
-        private const string GAME_STATE_PREFIX = "gamestate_";
-        private const string PLAYER_DATA_PREFIX = "player_";
-        private const string FILE_EXTENSION = ".json";
 
         public PersistenceService()
         {
@@ -38,7 +38,6 @@ namespace Runtime.Infrastructure.Persistence
                 // Create necessary directories
                 EnsureDirectoryExists(_gameStateFolder);
                 EnsureDirectoryExists(_playerDataFolder);
-                
                 Debug.Log($"[PersistenceService] Initialized with path: {_persistentDataPath}");
                 await UniTask.Yield();
             }
@@ -60,12 +59,9 @@ namespace Runtime.Infrastructure.Persistence
             {
                 string fileName = GAME_STATE_PREFIX + saveSlot + FILE_EXTENSION;
                 string filePath = Path.Combine(_gameStateFolder, fileName);
-                
                 GameStateData gameStateData = ConvertToGameStateData(gameState);
                 string jsonData = JsonConvert.SerializeObject(gameStateData, Formatting.Indented);
-                
                 await File.WriteAllTextAsync(filePath, jsonData);
-                
                 Debug.Log($"[PersistenceService] Game state saved to slot: {saveSlot}");
                 return true;
             }
@@ -88,18 +84,16 @@ namespace Runtime.Infrastructure.Persistence
             {
                 string fileName = GAME_STATE_PREFIX + saveSlot + FILE_EXTENSION;
                 string filePath = Path.Combine(_gameStateFolder, fileName);
-                
+
                 if (!File.Exists(filePath))
                 {
                     Debug.LogWarning($"[PersistenceService] Save file not found: {saveSlot}");
                     return null;
                 }
-                
+
                 string jsonData = await File.ReadAllTextAsync(filePath);
                 GameStateData gameStateData = JsonConvert.DeserializeObject<GameStateData>(jsonData);
-                
                 GameState gameState = ConvertFromGameStateData(gameStateData);
-                
                 Debug.Log($"[PersistenceService] Game state loaded from slot: {saveSlot}");
                 return gameState;
             }
@@ -116,18 +110,18 @@ namespace Runtime.Infrastructure.Persistence
             {
                 return false;
             }
-
+            
             try
             {
                 string fileName = GAME_STATE_PREFIX + saveSlot + FILE_EXTENSION;
                 string filePath = Path.Combine(_gameStateFolder, fileName);
-                
+
                 if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
                     Debug.Log($"[PersistenceService] Save deleted: {saveSlot}");
                 }
-                
+
                 await UniTask.Yield();
                 return true;
             }
@@ -141,16 +135,15 @@ namespace Runtime.Infrastructure.Persistence
         public async UniTask<List<string>> GetAvailableSavesAsync()
         {
             List<string> availableSaves = new List<string>();
-            
+
             try
             {
                 if (!Directory.Exists(_gameStateFolder))
                 {
                     return availableSaves;
                 }
-                
+
                 string[] files = Directory.GetFiles(_gameStateFolder, GAME_STATE_PREFIX + "*" + FILE_EXTENSION);
-                
                 for (int index = 0; index < files.Length; index++)
                 {
                     string file = files[index];
@@ -158,14 +151,14 @@ namespace Runtime.Infrastructure.Persistence
                     string saveSlot = fileName.Substring(GAME_STATE_PREFIX.Length);
                     availableSaves.Add(saveSlot);
                 }
-                
+
                 await UniTask.Yield();
             }
             catch (Exception exception)
             {
                 Debug.LogError($"[PersistenceService] Failed to get available saves: {exception.Message}");
             }
-            
+
             return availableSaves;
         }
 
@@ -175,10 +168,9 @@ namespace Runtime.Infrastructure.Persistence
             {
                 return false;
             }
-            
+
             string fileName = GAME_STATE_PREFIX + saveSlot + FILE_EXTENSION;
             string filePath = Path.Combine(_gameStateFolder, fileName);
-            
             return File.Exists(filePath);
         }
 
@@ -193,12 +185,9 @@ namespace Runtime.Infrastructure.Persistence
             {
                 string fileName = PLAYER_DATA_PREFIX + player.Id + FILE_EXTENSION;
                 string filePath = Path.Combine(_playerDataFolder, fileName);
-                
                 PlayerData playerData = ConvertToPlayerData(player);
                 string jsonData = JsonConvert.SerializeObject(playerData, Formatting.Indented);
-                
                 await File.WriteAllTextAsync(filePath, jsonData);
-                
                 Debug.Log($"[PersistenceService] Player data saved for: {player.Name}");
                 return true;
             }
@@ -215,17 +204,14 @@ namespace Runtime.Infrastructure.Persistence
             {
                 string fileName = PLAYER_DATA_PREFIX + playerId + FILE_EXTENSION;
                 string filePath = Path.Combine(_playerDataFolder, fileName);
-                
                 if (!File.Exists(filePath))
                 {
                     return null;
                 }
-                
+
                 string jsonData = await File.ReadAllTextAsync(filePath);
                 PlayerData playerData = JsonConvert.DeserializeObject<PlayerData>(jsonData);
-                
                 Player player = ConvertFromPlayerData(playerData);
-                
                 Debug.Log($"[PersistenceService] Player data loaded for ID: {playerId}");
                 return player;
             }
@@ -247,7 +233,6 @@ namespace Runtime.Infrastructure.Persistence
             {
                 string jsonData = JsonConvert.SerializeObject(configuration, Formatting.Indented);
                 await File.WriteAllTextAsync(_configurationFile, jsonData);
-                
                 Debug.Log("[PersistenceService] Game configuration saved");
                 return true;
             }
@@ -266,10 +251,9 @@ namespace Runtime.Infrastructure.Persistence
                 {
                     return GameConfiguration.CreateDefault();
                 }
-                
+
                 string jsonData = await File.ReadAllTextAsync(_configurationFile);
                 GameConfiguration configuration = JsonConvert.DeserializeObject<GameConfiguration>(jsonData);
-                
                 Debug.Log("[PersistenceService] Game configuration loaded");
                 return configuration ?? GameConfiguration.CreateDefault();
             }
@@ -291,7 +275,6 @@ namespace Runtime.Infrastructure.Persistence
             {
                 string jsonData = JsonConvert.SerializeObject(scores, Formatting.Indented);
                 await File.WriteAllTextAsync(_scoresFile, jsonData);
-                
                 Debug.Log("[PersistenceService] Player scores saved");
                 return true;
             }
@@ -310,10 +293,9 @@ namespace Runtime.Infrastructure.Persistence
                 {
                     return new Dictionary<int, int>();
                 }
-                
+
                 string jsonData = await File.ReadAllTextAsync(_scoresFile);
                 Dictionary<int, int> scores = JsonConvert.DeserializeObject<Dictionary<int, int>>(jsonData);
-                
                 Debug.Log("[PersistenceService] Player scores loaded");
                 return scores ?? new Dictionary<int, int>();
             }
@@ -335,7 +317,6 @@ namespace Runtime.Infrastructure.Persistence
             {
                 string jsonData = JsonConvert.SerializeObject(settings, Formatting.Indented);
                 await File.WriteAllTextAsync(_settingsFile, jsonData);
-                
                 Debug.Log("[PersistenceService] Settings saved");
                 return true;
             }
@@ -354,10 +335,10 @@ namespace Runtime.Infrastructure.Persistence
                 {
                     return new Dictionary<string, object>();
                 }
-                
+
                 string jsonData = await File.ReadAllTextAsync(_settingsFile);
-                Dictionary<string, object> settings = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonData);
-                
+                Dictionary<string, object> settings =
+                    JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonData);
                 Debug.Log("[PersistenceService] Settings loaded");
                 return settings ?? new Dictionary<string, object>();
             }
@@ -378,19 +359,18 @@ namespace Runtime.Infrastructure.Persistence
                     Directory.Delete(_gameStateFolder, true);
                     EnsureDirectoryExists(_gameStateFolder);
                 }
-                
+
                 // Clear player data
                 if (Directory.Exists(_playerDataFolder))
                 {
                     Directory.Delete(_playerDataFolder, true);
                     EnsureDirectoryExists(_playerDataFolder);
                 }
-                
+
                 // Clear individual files
                 if (File.Exists(_configurationFile)) File.Delete(_configurationFile);
                 if (File.Exists(_scoresFile)) File.Delete(_scoresFile);
                 if (File.Exists(_settingsFile)) File.Delete(_settingsFile);
-                
                 Debug.Log("[PersistenceService] All data cleared");
                 await UniTask.Yield();
                 return true;
@@ -405,7 +385,6 @@ namespace Runtime.Infrastructure.Persistence
         public async UniTask<long> GetStorageSizeAsync()
         {
             long totalSize = 0;
-            
             try
             {
                 // Calculate size of all persistence files
@@ -413,15 +392,26 @@ namespace Runtime.Infrastructure.Persistence
                 {
                     totalSize += GetDirectorySize(_gameStateFolder);
                 }
-                
+
                 if (Directory.Exists(_playerDataFolder))
                 {
                     totalSize += GetDirectorySize(_playerDataFolder);
                 }
-                
-                if (File.Exists(_configurationFile)) totalSize += new FileInfo(_configurationFile).Length;
-                if (File.Exists(_scoresFile)) totalSize += new FileInfo(_scoresFile).Length;
-                if (File.Exists(_settingsFile)) totalSize += new FileInfo(_settingsFile).Length;
+
+                if (File.Exists(_configurationFile))
+                {
+                    totalSize += new FileInfo(_configurationFile).Length;
+                }
+
+                if (File.Exists(_scoresFile))
+                {
+                    totalSize += new FileInfo(_scoresFile).Length;
+                }
+
+                if (File.Exists(_settingsFile))
+                {
+                    totalSize += new FileInfo(_settingsFile).Length;
+                }
                 
                 await UniTask.Yield();
             }
@@ -429,7 +419,7 @@ namespace Runtime.Infrastructure.Persistence
             {
                 Debug.LogError($"[PersistenceService] Failed to calculate storage size: {exception.Message}");
             }
-            
+
             return totalSize;
         }
 
@@ -460,7 +450,6 @@ namespace Runtime.Infrastructure.Persistence
             try
             {
                 string[] files = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
-                
                 for (int index = 0; index < files.Length; index++)
                 {
                     FileInfo fileInfo = new FileInfo(files[index]);
@@ -471,7 +460,7 @@ namespace Runtime.Infrastructure.Persistence
             {
                 Debug.LogError($"[PersistenceService] Failed to calculate directory size: {exception.Message}");
             }
-            
+
             return size;
         }
 
@@ -499,10 +488,7 @@ namespace Runtime.Infrastructure.Persistence
         {
             return new PlayerData
             {
-                Id = player.Id,
-                Name = player.Name,
-                PlayerType = player.PlayerType,
-                Score = player.Score
+                Id = player.Id, Name = player.Name, PlayerType = player.PlayerType, Score = player.Score
             };
         }
 
@@ -519,6 +505,7 @@ namespace Runtime.Infrastructure.Persistence
     {
         public Runtime.Domain.Enums.GameStateType CurrentStateType;
         public int CurrentPlayerIndex;
+
         public int RoundNumber;
         // Add other serializable fields as needed
     }

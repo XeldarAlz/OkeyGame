@@ -7,11 +7,8 @@ namespace Runtime.Domain.ValueObjects
     public readonly struct TileData : IEquatable<TileData>
     {
         public readonly int Number;
-
         public readonly OkeyColor Color;
-
         public readonly OkeyPieceType PieceType;
-
         public readonly bool IsJoker;
 
         public TileData(int number, OkeyColor color, OkeyPieceType pieceType = OkeyPieceType.Normal)
@@ -69,12 +66,9 @@ namespace Runtime.Domain.ValueObjects
 
         public override string ToString()
         {
-            if (IsJoker)
-            {
-                return $"Joker({PieceType})";
-            }
-
-            return $"{Number}{Color}";
+            return IsJoker 
+                ? $"Joker({PieceType})" 
+                : $"{Number}{Color}";
         }
     }
 }

@@ -4,7 +4,6 @@ namespace Runtime.Core.Architecture
 {
     public interface IService
     {
-        
     }
 
     public interface IInitializableService : IService

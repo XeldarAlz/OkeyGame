@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Runtime.Core.Signals
+namespace Runtime.Core.SignalCenter
 {
     public sealed class SignalCenter : ISignalCenter
     {
@@ -16,38 +16,40 @@ namespace Runtime.Core.Signals
                 callbacks = new List<Delegate>();
                 _subscribers[signalType] = callbacks;
             }
-            
+
             callbacks.Add(callback);
         }
 
         public void Unsubscribe<TSignal>(Action<TSignal> callback)
         {
             Type signalType = typeof(TSignal);
-            
-            if (_subscribers.TryGetValue(signalType, out List<Delegate> callbacks))
+
+            if (!_subscribers.TryGetValue(signalType, out List<Delegate> callbacks))
             {
-                callbacks.Remove(callback);
-                
-                if (callbacks.Count == 0)
-                {
-                    _subscribers.Remove(signalType);
-                }
+                return;
+            }
+            
+            callbacks.Remove(callback);
+            if (callbacks.Count == 0)
+            {
+                _subscribers.Remove(signalType);
             }
         }
 
         public void Fire<TSignal>(TSignal signal)
         {
             Type signalType = typeof(TSignal);
-            
-            if (_subscribers.TryGetValue(signalType, out List<Delegate> callbacks))
+
+            if (!_subscribers.TryGetValue(signalType, out List<Delegate> callbacks))
             {
-                // Create a copy of the list to avoid issues if callbacks modify the list
-                Delegate[] callbacksCopy = callbacks.ToArray();
-                
-                for (int index = 0; index < callbacksCopy.Length; index++)
-                {
-                    ((Action<TSignal>)callbacksCopy[index]).Invoke(signal);
-                }
+                return;
+            }
+            
+            // Create a copy of the list to avoid issues if callbacks modify the list
+            Delegate[] callbacksCopy = callbacks.ToArray();
+            for (int index = 0; index < callbacksCopy.Length; index++)
+            {
+                ((Action<TSignal>)callbacksCopy[index]).Invoke(signal);
             }
         }
     }

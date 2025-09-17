@@ -9,23 +9,13 @@ namespace Runtime.Domain.Models
     [Serializable]
     public class Player
     {
-        [SerializeField] 
-        private int _score;
-        
-        [SerializeField] 
-        private string _name;
-        
-        [SerializeField] 
-        private PlayerType _playerType;
-        
-        [SerializeField] 
-        private bool _isActive;
-        
-        [SerializeField] 
-        private List<OkeyPiece> _tiles;
-
-        private int _id;
-        
+        [SerializeField] private int _score;
+        [SerializeField] private string _name;
+        [SerializeField] private PlayerType _playerType;
+        [SerializeField] private bool _isActive;
+        [SerializeField] private List<OkeyPiece> _tiles;
+       
+        private readonly int _id;
         public int Id => _id;
         public string Name => _name;
         public PlayerType PlayerType => _playerType;
@@ -63,12 +53,15 @@ namespace Runtime.Domain.Models
         {
             for (int index = 0; index < _tiles.Count; index++)
             {
-                if (_tiles[index].UniqueId == uniqueId)
+                if (_tiles[index].UniqueId != uniqueId)
                 {
-                    _tiles.RemoveAt(index);
-                    return true;
+                    continue;
                 }
+                
+                _tiles.RemoveAt(index);
+                return true;
             }
+
             return false;
         }
 
@@ -81,6 +74,7 @@ namespace Runtime.Domain.Models
                     return _tiles[index];
                 }
             }
+
             return null;
         }
 
@@ -123,6 +117,7 @@ namespace Runtime.Domain.Models
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -137,6 +132,7 @@ namespace Runtime.Domain.Models
             {
                 return _id == other._id;
             }
+
             return false;
         }
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Runtime.Core.Architecture;
 using Runtime.Domain.Models;
 using Runtime.Domain.Enums;
 using Runtime.Domain.ValueObjects;
@@ -29,19 +28,18 @@ namespace Runtime.Presentation.Controllers
         private readonly IScoreService _scoreService;
         private readonly GameBoardPresenter _gameBoardPresenter;
         private readonly PlayerRackPresenter _playerRackPresenter;
-
+        
         private GameConfiguration _currentGameConfiguration;
         private List<Player> _players;
         private Player _humanPlayer;
         private List<Player> _aiPlayers;
         private CancellationTokenSource _gameLoopCancellation;
         private bool _isGameActive;
-
+        
         public event Action<GameStateType> OnGameStateChanged;
         public event Action<Player> OnPlayerTurnChanged;
         public event Action<Player, WinType> OnGameEnded;
         public event Action<List<Player>> OnPlayersInitialized;
-
         public GameConfiguration CurrentGameConfiguration => _currentGameConfiguration;
         public List<Player> Players => _players;
         public Player HumanPlayer => _humanPlayer;
@@ -49,17 +47,10 @@ namespace Runtime.Presentation.Controllers
         public GameStateType CurrentGameState => _gameStateService?.CurrentStateType ?? GameStateType.None;
 
         [Inject]
-        public GameController(
-            IGameStateService gameStateService,
-            ITileService tileService,
-            IGameRulesService gameRulesService,
-            ITurnManager turnManager,
-            IAIPlayerFactory aiPlayerFactory,
-            IWinConditionService winConditionService,
-            IScoreCalculationService scoreCalculationService,
-            IScoreService scoreService,
-            GameBoardPresenter gameBoardPresenter,
-            PlayerRackPresenter playerRackPresenter)
+        public GameController(IGameStateService gameStateService, ITileService tileService,
+            IGameRulesService gameRulesService, ITurnManager turnManager, IAIPlayerFactory aiPlayerFactory,
+            IWinConditionService winConditionService, IScoreCalculationService scoreCalculationService,
+            IScoreService scoreService, GameBoardPresenter gameBoardPresenter, PlayerRackPresenter playerRackPresenter)
         {
             _gameStateService = gameStateService;
             _tileService = tileService;
@@ -71,7 +62,6 @@ namespace Runtime.Presentation.Controllers
             _scoreService = scoreService;
             _gameBoardPresenter = gameBoardPresenter;
             _playerRackPresenter = playerRackPresenter;
-
             _players = new List<Player>();
             _aiPlayers = new List<Player>();
             _gameLoopCancellation = new CancellationTokenSource();
@@ -92,7 +82,7 @@ namespace Runtime.Presentation.Controllers
             _currentGameConfiguration = configuration;
             _gameLoopCancellation?.Cancel();
             _gameLoopCancellation = new CancellationTokenSource();
-
+            
             try
             {
                 await InitializeGameAsync();
@@ -121,10 +111,11 @@ namespace Runtime.Presentation.Controllers
 
             _gameLoopCancellation?.Cancel();
             _isGameActive = false;
-
+            
             await _gameStateService.TransitionToStateAsync(GameStateType.GameEnded);
             
             ClearGameData();
+            
             return true;
         }
 
@@ -146,10 +137,10 @@ namespace Runtime.Presentation.Controllers
             }
 
             Player currentPlayer = _turnManager.GetCurrentPlayer();
-            GameStateType targetState = currentPlayer != null && currentPlayer.IsAI 
-                ? GameStateType.AITurn 
+            GameStateType targetState = currentPlayer != null && currentPlayer.IsAI
+                ? GameStateType.AITurn
                 : GameStateType.PlayerTurn;
-
+            
             return await _gameStateService.TransitionToStateAsync(targetState);
         }
 
@@ -175,6 +166,7 @@ namespace Runtime.Presentation.Controllers
             await ExecutePlayerActionAsync(action, currentPlayer);
             
             WinType? winCondition = await CheckWinConditionAsync(currentPlayer);
+            
             if (winCondition.HasValue)
             {
                 await HandleGameEndAsync(currentPlayer, winCondition.Value);
@@ -182,12 +174,14 @@ namespace Runtime.Presentation.Controllers
             }
 
             await _turnManager.NextPlayerTurnAsync();
+            
             return true;
         }
 
         private async UniTask InitializeGameAsync()
         {
             _isGameActive = true;
+            
             await _gameStateService.TransitionToStateAsync(GameStateType.Initializing);
         }
 
@@ -195,10 +189,9 @@ namespace Runtime.Presentation.Controllers
         {
             _players.Clear();
             _aiPlayers.Clear();
-
             _humanPlayer = new Player(0, "Human Player", PlayerType.Human);
             _players.Add(_humanPlayer);
-
+            
             for (int aiIndex = 1; aiIndex <= 3; aiIndex++)
             {
                 AIDifficulty difficulty = _currentGameConfiguration.AIDifficulty;
@@ -217,21 +210,18 @@ namespace Runtime.Presentation.Controllers
         {
             List<OkeyPiece> allTiles = await _tileService.CreateFullTileSetAsync();
             List<OkeyPiece> shuffledTiles = _tileService.ShuffleTiles(allTiles);
-
             int tileIndex = 0;
             
             for (int playerIndex = 0; playerIndex < _players.Count; playerIndex++)
             {
                 Player player = _players[playerIndex];
                 int tilesToDraw = playerIndex == 0 ? 15 : 14;
-
                 for (int tileCount = 0; tileCount < tilesToDraw; tileCount++)
                 {
                     if (tileIndex < shuffledTiles.Count)
                     {
                         OkeyPiece tile = shuffledTiles[tileIndex++];
                         player.AddTile(tile);
-
                         if (player == _humanPlayer)
                         {
                             await _playerRackPresenter.AddTileToRackAsync(tile);
@@ -251,7 +241,7 @@ namespace Runtime.Presentation.Controllers
         {
             await _gameStateService.TransitionToStateAsync(GameStateType.GameStarted);
             await _turnManager.StartFirstTurnAsync();
-
+            
             while (_isGameActive && !_gameLoopCancellation.Token.IsCancellationRequested)
             {
                 try
@@ -287,17 +277,18 @@ namespace Runtime.Presentation.Controllers
         private async UniTask ProcessAITurnAsync(Player aiPlayer)
         {
             await _gameStateService.TransitionToStateAsync(GameStateType.AITurn);
-            
             await UniTask.Delay(1000, cancellationToken: _gameLoopCancellation.Token);
-
+            
             if (aiPlayer is IAIPlayer aiPlayerInterface)
             {
-                PlayerAction aiAction = await aiPlayerInterface.DecideActionAsync(_gameStateService.GetCurrentGameState());
-                
+                PlayerAction aiAction =
+                    await aiPlayerInterface.DecideActionAsync(_gameStateService.GetCurrentGameState());
                 bool actionExecuted = await ExecutePlayerActionAsync(aiAction, aiPlayer);
+                
                 if (actionExecuted)
                 {
                     WinType? winCondition = await CheckWinConditionAsync(aiPlayer);
+                    
                     if (winCondition.HasValue)
                     {
                         await HandleGameEndAsync(aiPlayer, winCondition.Value);
@@ -316,12 +307,13 @@ namespace Runtime.Presentation.Controllers
 
         private async UniTask<bool> ValidatePlayerActionAsync(PlayerAction action, Player player)
         {
-            if (action == null || player == null)
+            if (player == null)
             {
                 return false;
             }
 
             GameState currentGameState = _gameStateService.GetCurrentGameState();
+            
             return _gameRulesService.ValidatePlayerMove(action, currentGameState);
         }
 
@@ -336,14 +328,11 @@ namespace Runtime.Presentation.Controllers
             {
                 case TurnAction.Draw:
                     return await HandleDrawFromPileAsync(player);
-                
                 case TurnAction.Discard:
                     OkeyPiece tileToDiscard = FindPlayerTileByData(player, action.TileData);
                     return await HandleDiscardTileAsync(player, tileToDiscard);
-                
                 case TurnAction.DeclareWin:
                     return await HandleDeclareWinAsync(player);
-                
                 default:
                     return false;
             }
@@ -352,6 +341,7 @@ namespace Runtime.Presentation.Controllers
         private async UniTask<bool> HandleDrawFromPileAsync(Player player)
         {
             OkeyPiece drawnTile = await _tileService.DrawTileFromPileAsync();
+            
             if (drawnTile == null)
             {
                 return false;
@@ -370,6 +360,7 @@ namespace Runtime.Presentation.Controllers
         private async UniTask<bool> HandleDrawFromDiscardAsync(Player player)
         {
             OkeyPiece discardedTile = await _tileService.DrawTileFromDiscardAsync();
+            
             if (discardedTile == null)
             {
                 return false;
@@ -377,7 +368,7 @@ namespace Runtime.Presentation.Controllers
 
             player.AddTile(discardedTile);
             
-            if (player == _humanPlayer)
+            if (ReferenceEquals(player, _humanPlayer))
             {
                 await _playerRackPresenter.AddTileToRackAsync(discardedTile);
             }
@@ -394,7 +385,7 @@ namespace Runtime.Presentation.Controllers
 
             await _tileService.AddTileToDiscardAsync(tile);
             
-            if (player == _humanPlayer)
+            if (ReferenceEquals(player, _humanPlayer))
             {
                 await _playerRackPresenter.RemoveTileFromRackAsync(tile);
             }
@@ -405,17 +396,22 @@ namespace Runtime.Presentation.Controllers
         private async UniTask<bool> HandleDeclareWinAsync(Player player)
         {
             WinType? winCondition = await _winConditionService.CheckPlayerWinConditionAsync(player);
-            if (winCondition.HasValue)
-            {
-                bool isValidWin = await _winConditionService.ValidateWinDeclarationAsync(player, winCondition.Value);
-                if (isValidWin)
-                {
-                    await HandleGameEndAsync(player, winCondition.Value);
-                    return true;
-                }
-            }
 
-            return false;
+            if (!winCondition.HasValue)
+            {
+                return false;
+            }
+            
+            bool isValidWin = await _winConditionService.ValidateWinDeclarationAsync(player, winCondition.Value);
+            
+            if (!isValidWin)
+            {
+                return false;
+            }
+            
+            await HandleGameEndAsync(player, winCondition.Value);
+            
+            return true;
         }
 
         private async UniTask<WinType?> CheckWinConditionAsync(Player player)
@@ -426,11 +422,12 @@ namespace Runtime.Presentation.Controllers
         private async UniTask HandleGameEndAsync(Player winner, WinType winType)
         {
             _isGameActive = false;
-            
+
             // Calculate and apply scores for all players
-            Dictionary<Player, int> roundScores = await _scoreCalculationService.CalculateRoundScoresAsync(_players, winner, winType);
+            Dictionary<Player, int> roundScores =
+                await _scoreCalculationService.CalculateRoundScoresAsync(_players, winner, winType);
             await _scoreService.ApplyWinScoreAsync(winner, winType, _players);
-            
+
             // Check if game should end (player elimination or target score reached)
             bool gameEnded = await _scoreService.CheckGameEndConditionAsync(_players);
             
@@ -442,7 +439,7 @@ namespace Runtime.Presentation.Controllers
             {
                 await _gameStateService.TransitionToStateAsync(GameStateType.RoundEnded);
             }
-            
+
             OnGameEnded?.Invoke(winner, winType);
         }
 
@@ -513,6 +510,7 @@ namespace Runtime.Presentation.Controllers
             }
 
             List<OkeyPiece> playerTiles = player.GetTiles();
+            
             for (int tileIndex = 0; tileIndex < playerTiles.Count; tileIndex++)
             {
                 OkeyPiece tile = playerTiles[tileIndex];

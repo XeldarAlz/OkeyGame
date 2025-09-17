@@ -1,4 +1,4 @@
-using Runtime.Core.Signals;
+using Runtime.Core.SignalCenter;
 using Runtime.Core.Utilities;
 using Runtime.Infrastructure.AssetManagement;
 using Runtime.Infrastructure.Localization;
@@ -6,6 +6,7 @@ using Runtime.Infrastructure.Persistence;
 using Runtime.Services.Audio;
 using Runtime.Services.Navigation;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Zenject;
 
 namespace Runtime.Installers

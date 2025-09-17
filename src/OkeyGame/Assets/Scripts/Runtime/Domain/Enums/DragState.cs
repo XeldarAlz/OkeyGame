@@ -1,12 +1,12 @@
 namespace Runtime.Domain.Enums
 {
-    public enum DragState
+    public enum DragState : byte
     {
-        None,
-        Selected,
-        Dragging,
-        Hovering,
-        Snapping,
-        Dropped
+        None = 0,
+        Selected = 1,
+        Dragging = 2,
+        Hovering = 3,
+        Snapping = 4,
+        Dropped = 5
     }
 }

@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using Runtime.Core.Architecture;
 using Runtime.Domain.Models;
 using Runtime.Domain.Enums;
-using Runtime.Infrastructure.Persistence;
 using Zenject;
 
 namespace Runtime.Services.GameLogic

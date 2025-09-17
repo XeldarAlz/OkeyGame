@@ -28,7 +28,6 @@ namespace Runtime.Core.Architecture
 
         protected virtual void OnViewDestroyed()
         {
-            
         }
 
         public virtual void Dispose()

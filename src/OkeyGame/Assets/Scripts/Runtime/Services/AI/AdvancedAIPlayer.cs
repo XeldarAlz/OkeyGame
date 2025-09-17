@@ -16,20 +16,14 @@ namespace Runtime.Services.AI
         private float _lastHandStrength;
         private int _turnsPlayed;
         private WinType _preferredWinType;
-        
         private const float AGGRESSIVE_THRESHOLD = 7.0f;
         private const float DEFENSIVE_THRESHOLD = 3.0f;
         private const int MEMORY_TURNS = 10;
-
         public override AIDifficulty Difficulty => AIDifficulty.Advanced;
 
         [Inject]
-        public AdvancedAIPlayer(
-            int playerId, 
-            string playerName, 
-            IAIPlayerService aiPlayerService, 
-            IAIDecisionService aiDecisionService) 
-            : base(playerId, playerName, aiPlayerService, aiDecisionService)
+        public AdvancedAIPlayer(int playerId, string playerName, IAIPlayerService aiPlayerService,
+            IAIDecisionService aiDecisionService) : base(playerId, playerName, aiPlayerService, aiDecisionService)
         {
             _opponentHandStrengths = new Dictionary<int, float>();
             _observedDiscards = new List<TileData>();
@@ -49,14 +43,13 @@ namespace Runtime.Services.AI
             try
             {
                 await UniTask.Delay(300); // Simulate complex thinking time
-                
                 _turnsPlayed++;
-                
+
                 // Advanced analysis before making decision
                 AnalyzeGameState(gameState);
                 UpdateOpponentAnalysis(gameState);
                 DetermineOptimalWinStrategy(gameState);
-                
+
                 // Check if we should declare win first
                 if (ShouldDeclareWin(gameState))
                 {
@@ -66,11 +59,7 @@ namespace Runtime.Services.AI
 
                 // Use advanced strategic decision making
                 PlayerAction strategicAction = await MakeAdvancedDecision(gameState);
-                
-                if (strategicAction != null)
-                {
-                    return strategicAction;
-                }
+                return strategicAction;
 
                 // Fallback to base strategic action
                 return await _aiDecisionService.DecideActionAsync(this, gameState, Difficulty);
@@ -91,11 +80,10 @@ namespace Runtime.Services.AI
 
             float currentHandStrength = EvaluateHandStrength(gameState);
             _lastHandStrength = currentHandStrength;
-            
+
             // Advanced strategy updates
             AdaptToOpponents(gameState);
             OptimizeWinStrategy(gameState);
-            
             base.UpdateStrategy(gameState);
         }
 
@@ -108,26 +96,26 @@ namespace Runtime.Services.AI
         {
             float handStrength = EvaluateHandStrength(gameState);
             string strategy = DetermineCurrentStrategy(handStrength);
-            
-            Debug.Log($"[AdvancedAIPlayer] {Name} using {strategy} strategy (strength: {handStrength:F1}, preferred win: {_preferredWinType})");
+            Debug.Log(
+                $"[AdvancedAIPlayer] {Name} using {strategy} strategy (strength: {handStrength:F1}, preferred win: {_preferredWinType})");
         }
 
         private async UniTask<PlayerAction> MakeAdvancedDecision(GameState gameState)
         {
             float handStrength = EvaluateHandStrength(gameState);
-            
+
             // Aggressive play when hand is strong
             if (handStrength >= AGGRESSIVE_THRESHOLD)
             {
                 return await MakeAggressiveDecision(gameState);
             }
-            
+
             // Defensive play when hand is weak
             if (handStrength <= DEFENSIVE_THRESHOLD)
             {
                 return await MakeDefensiveDecision(gameState);
             }
-            
+
             // Balanced play for moderate hands
             return await MakeBalancedDecision(gameState);
         }
@@ -139,7 +127,7 @@ namespace Runtime.Services.AI
             {
                 return PlayerAction.CreateDrawAction(Id);
             }
-            
+
             // Draw from pile to get new tiles
             return PlayerAction.CreateDrawAction(Id);
         }
@@ -152,7 +140,7 @@ namespace Runtime.Services.AI
             {
                 return PlayerAction.CreateDiscardAction(Id, safeDiscard, new GridPosition(0, 0));
             }
-            
+
             // Default to drawing from pile
             return PlayerAction.CreateDrawAction(Id);
         }
@@ -177,7 +165,7 @@ namespace Runtime.Services.AI
                 if (lastDiscard != null && !_observedDiscards.Contains(lastDiscard.TileData))
                 {
                     _observedDiscards.Add(lastDiscard.TileData);
-                    
+
                     // Keep memory limited
                     if (_observedDiscards.Count > MEMORY_TURNS)
                     {
@@ -217,7 +205,7 @@ namespace Runtime.Services.AI
 
             float handStrength = EvaluateHandStrength(gameState);
             int pairCount = CountPairs();
-            
+
             // Prefer pairs win if we have many pairs
             if (pairCount >= 5)
             {
@@ -266,7 +254,6 @@ namespace Runtime.Services.AI
             // Continuously evaluate if current win strategy is optimal
             float currentProgress = EvaluateWinProgress(_preferredWinType, gameState);
             float alternativeProgress = EvaluateWinProgress(GetAlternativeWinType(), gameState);
-            
             if (alternativeProgress > currentProgress + 1.0f)
             {
                 _preferredWinType = GetAlternativeWinType();
@@ -283,16 +270,15 @@ namespace Runtime.Services.AI
 
             // Estimate based on tile count and observed behavior
             float baseStrength = 1.0f;
-            
+
             // Fewer tiles generally means stronger hand
             if (opponent.Tiles != null)
             {
                 baseStrength += (15 - opponent.Tiles.Count) * 0.5f;
             }
-            
+
             // Add randomness to simulate uncertainty
             baseStrength += Random.Range(-1.0f, 1.0f);
-            
             return Mathf.Max(0.0f, baseStrength);
         }
 
@@ -306,7 +292,6 @@ namespace Runtime.Services.AI
             // Find tile that's least likely to help opponents
             TileData safestTile = default;
             float lowestRisk = float.MaxValue;
-            
             for (int tileIndex = 0; tileIndex < Tiles.Count; tileIndex++)
             {
                 OkeyPiece tile = Tiles[tileIndex];
@@ -322,7 +307,7 @@ namespace Runtime.Services.AI
                     safestTile = tile.TileData;
                 }
             }
-            
+
             return safestTile;
         }
 
@@ -334,13 +319,13 @@ namespace Runtime.Services.AI
             }
 
             float risk = 1.0f;
-            
+
             // Higher risk for middle numbers
             if (tileData.Number >= 4 && tileData.Number <= 10)
             {
                 risk += 1.0f;
             }
-            
+
             // Higher risk if this tile was recently discarded (opponents might need it)
             for (int discardIndex = 0; discardIndex < _observedDiscards.Count; discardIndex++)
             {
@@ -350,7 +335,7 @@ namespace Runtime.Services.AI
                     risk += 0.5f;
                 }
             }
-            
+
             return risk;
         }
 
@@ -362,7 +347,6 @@ namespace Runtime.Services.AI
             }
 
             Dictionary<string, int> tileCount = new Dictionary<string, int>();
-            
             for (int tileIndex = 0; tileIndex < Tiles.Count; tileIndex++)
             {
                 OkeyPiece tile = Tiles[tileIndex];
@@ -376,15 +360,16 @@ namespace Runtime.Services.AI
                 {
                     tileCount[tileKey] = 0;
                 }
+
                 tileCount[tileKey]++;
             }
-            
+
             int pairCount = 0;
             foreach (int count in tileCount.Values)
             {
                 pairCount += count / 2;
             }
-            
+
             return pairCount;
         }
 
@@ -412,10 +397,12 @@ namespace Runtime.Services.AI
             {
                 return "AGGRESSIVE";
             }
+
             if (handStrength <= DEFENSIVE_THRESHOLD)
             {
                 return "DEFENSIVE";
             }
+
             return "BALANCED";
         }
     }

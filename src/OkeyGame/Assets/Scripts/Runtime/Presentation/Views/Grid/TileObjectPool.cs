@@ -17,18 +17,16 @@ namespace Runtime.Presentation.Views.Grid
         [Header("Pool Organization")]
         [SerializeField] private Transform _poolContainer;
         [SerializeField] private Transform _activeContainer;
-
+        
         private readonly Stack<GameObject> _availableTiles = new Stack<GameObject>();
         private readonly HashSet<GameObject> _activeTiles = new HashSet<GameObject>();
         private readonly Dictionary<GameObject, TilePoolData> _tileData = new Dictionary<GameObject, TilePoolData>();
-
         private bool _isInitialized;
         private int _totalCreatedTiles;
-
+        
         public event Action<GameObject> OnTileCreated;
         public event Action<GameObject> OnTileReturned;
         public event Action<GameObject> OnTileDestroyed;
-
         public int AvailableCount => _availableTiles.Count;
         public int ActiveCount => _activeTiles.Count;
         public int TotalCount => _totalCreatedTiles;
@@ -36,11 +34,11 @@ namespace Runtime.Presentation.Views.Grid
 
         private sealed class TilePoolData
         {
-            public OkeyPiece associatedPiece;
-            public GridPosition gridPosition;
-            public bool isInUse;
-            public float lastUsedTime;
-            public int usageCount;
+            public OkeyPiece AssociatedPiece;
+            public GridPosition GridPosition;
+            public bool IsInUse;
+            public float LastUsedTime;
+            public int UsageCount;
 
             public TilePoolData()
             {
@@ -49,10 +47,10 @@ namespace Runtime.Presentation.Views.Grid
 
             public void Reset()
             {
-                associatedPiece = null;
-                gridPosition = new GridPosition(-1, -1);
-                isInUse = false;
-                lastUsedTime = Time.time;
+                AssociatedPiece = null;
+                GridPosition = new GridPosition(-1, -1);
+                IsInUse = false;
+                LastUsedTime = Time.time;
             }
         }
 
@@ -75,12 +73,14 @@ namespace Runtime.Presentation.Views.Grid
                 _poolContainer = poolContainerObj.transform;
             }
 
-            if (_activeContainer == null)
+            if (_activeContainer != null)
             {
-                GameObject activeContainerObj = new GameObject("TilePool_Active");
-                activeContainerObj.transform.SetParent(transform);
-                _activeContainer = activeContainerObj.transform;
+                return;
             }
+            
+            GameObject activeContainerObj = new GameObject("TilePool_Active");
+            activeContainerObj.transform.SetParent(transform);
+            _activeContainer = activeContainerObj.transform;
         }
 
         public void InitializePool()
@@ -121,17 +121,15 @@ namespace Runtime.Presentation.Views.Grid
 
             GameObject tileObject = Instantiate(_tilePrefab, _poolContainer);
             tileObject.name = $"PooledTile_{_totalCreatedTiles}";
-            
+
             // Initialize tile components
             InitializeTileComponents(tileObject);
-            
+
             // Create pool data
             TilePoolData poolData = new TilePoolData();
             _tileData[tileObject] = poolData;
-            
             _totalCreatedTiles++;
             OnTileCreated?.Invoke(tileObject);
-            
             return tileObject;
         }
 
@@ -169,22 +167,24 @@ namespace Runtime.Presentation.Views.Grid
 
             // Configure the tile
             ConfigureTile(tileObject, piece, gridPosition);
-            
+
             // Move to active container
             tileObject.transform.SetParent(_activeContainer);
             tileObject.SetActive(true);
-            
+
             // Update tracking
             _activeTiles.Add(tileObject);
-            
-            if (_tileData.TryGetValue(tileObject, out TilePoolData poolData))
+
+            if (!_tileData.TryGetValue(tileObject, out TilePoolData poolData))
             {
-                poolData.isInUse = true;
-                poolData.associatedPiece = piece;
-                poolData.gridPosition = gridPosition;
-                poolData.lastUsedTime = Time.time;
-                poolData.usageCount++;
+                return tileObject;
             }
+            
+            poolData.IsInUse = true;
+            poolData.AssociatedPiece = piece;
+            poolData.GridPosition = gridPosition;
+            poolData.LastUsedTime = Time.time;
+            poolData.UsageCount++;
 
             return tileObject;
         }
@@ -216,6 +216,7 @@ namespace Runtime.Presentation.Views.Grid
 
             // Initialize DraggableTile (will be set up by the grid manager)
             DraggableTile draggableTile = tileObject.GetComponent<DraggableTile>();
+            
             if (draggableTile != null)
             {
                 // Grid manager will call Initialize on this component
@@ -231,13 +232,12 @@ namespace Runtime.Presentation.Views.Grid
 
             // Clean up the tile
             CleanupTile(tileObject);
-            
+
             // Return to pool
             ReturnTileToPool(tileObject);
-            
+
             // Update tracking
             _activeTiles.Remove(tileObject);
-            
             if (_tileData.TryGetValue(tileObject, out TilePoolData poolData))
             {
                 poolData.Reset();
@@ -279,7 +279,6 @@ namespace Runtime.Presentation.Views.Grid
         public void ReturnAllTiles()
         {
             List<GameObject> activeTilesList = new List<GameObject>(_activeTiles);
-            
             foreach (GameObject tileObject in activeTilesList)
             {
                 ReturnTile(tileObject);
@@ -307,13 +306,16 @@ namespace Runtime.Presentation.Views.Grid
             while (_availableTiles.Count > targetSize)
             {
                 GameObject tileObject = _availableTiles.Pop();
-                if (tileObject != null)
+                
+                if (tileObject == null)
                 {
-                    _tileData.Remove(tileObject);
-                    OnTileDestroyed?.Invoke(tileObject);
-                    DestroyImmediate(tileObject);
-                    _totalCreatedTiles--;
+                    continue;
                 }
+                
+                _tileData.Remove(tileObject);
+                OnTileDestroyed?.Invoke(tileObject);
+                DestroyImmediate(tileObject);
+                _totalCreatedTiles--;
             }
         }
 
@@ -321,17 +323,20 @@ namespace Runtime.Presentation.Views.Grid
         {
             // Return all active tiles
             ReturnAllTiles();
-            
+
             // Destroy all tiles
             while (_availableTiles.Count > 0)
             {
                 GameObject tileObject = _availableTiles.Pop();
-                if (tileObject != null)
+
+                if (tileObject == null)
                 {
-                    _tileData.Remove(tileObject);
-                    OnTileDestroyed?.Invoke(tileObject);
-                    DestroyImmediate(tileObject);
+                    continue;
                 }
+                
+                _tileData.Remove(tileObject);
+                OnTileDestroyed?.Invoke(tileObject);
+                DestroyImmediate(tileObject);
             }
 
             _totalCreatedTiles = 0;
@@ -356,26 +361,22 @@ namespace Runtime.Presentation.Views.Grid
 
         public OkeyPiece GetAssociatedPiece(GameObject tileObject)
         {
-            if (_tileData.TryGetValue(tileObject, out TilePoolData poolData))
-            {
-                return poolData.associatedPiece;
-            }
-            return null;
+            return _tileData.TryGetValue(tileObject, out TilePoolData poolData) 
+                ? poolData.AssociatedPiece 
+                : null;
         }
 
         public GridPosition GetGridPosition(GameObject tileObject)
         {
-            if (_tileData.TryGetValue(tileObject, out TilePoolData poolData))
-            {
-                return poolData.gridPosition;
-            }
-            return new GridPosition(-1, -1);
+            return _tileData.TryGetValue(tileObject, out TilePoolData poolData) 
+                ? poolData.GridPosition 
+                : new GridPosition(-1, -1);
         }
 
         public void SetMaxPoolSize(int newMaxSize)
         {
             _maxPoolSize = Mathf.Max(1, newMaxSize);
-            
+
             // Trim pool if necessary
             if (_totalCreatedTiles > _maxPoolSize)
             {
@@ -424,7 +425,8 @@ namespace Runtime.Presentation.Views.Grid
 
             public override string ToString()
             {
-                return $"Pool Stats - Total: {totalTiles}, Available: {availableTiles}, Active: {activeTiles}, Utilization: {poolUtilization:P1}";
+                return
+                    $"Pool Stats - Total: {totalTiles}, Available: {availableTiles}, Active: {activeTiles}, Utilization: {poolUtilization:P1}";
             }
         }
     }

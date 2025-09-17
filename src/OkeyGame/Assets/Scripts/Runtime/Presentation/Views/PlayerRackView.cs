@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Runtime.Domain.Models;
 using Runtime.Domain.ValueObjects;
-using Runtime.Domain.Enums;
 using Runtime.Presentation.Views.Grid;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UI;

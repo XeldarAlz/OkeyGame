@@ -38,8 +38,8 @@ namespace Runtime.Presentation.Presenters
         protected override void SubscribeToEvents()
         {
             base.SubscribeToEvents();
-
-            if (_view != null)
+            
+            if (!ReferenceEquals(_view, null))
             {
                 _view.OnDrawClicked += HandleDrawClicked;
                 _view.OnDiscardClicked += HandleDiscardClicked;
@@ -49,12 +49,12 @@ namespace Runtime.Presentation.Presenters
                 _view.OnResumeClicked += HandleResumeClicked;
             }
 
-            if (_gameStateService != null)
+            if (!ReferenceEquals(_gameStateService, null))
             {
                 _gameStateService.OnStateChanged += HandleGameStateChanged;
             }
 
-            if (_turnManager != null)
+            if (!ReferenceEquals(_turnManager, null))
             {
                 _turnManager.OnTurnChanged += HandleTurnChanged;
             }
@@ -62,7 +62,7 @@ namespace Runtime.Presentation.Presenters
 
         protected override void UnsubscribeFromEvents()
         {
-            if (_view != null)
+            if (!ReferenceEquals(_view, null))
             {
                 _view.OnDrawClicked -= HandleDrawClicked;
                 _view.OnDiscardClicked -= HandleDiscardClicked;
@@ -72,12 +72,12 @@ namespace Runtime.Presentation.Presenters
                 _view.OnResumeClicked -= HandleResumeClicked;
             }
 
-            if (_gameStateService != null)
+            if (!ReferenceEquals(_gameStateService, null))
             {
                 _gameStateService.OnStateChanged -= HandleGameStateChanged;
             }
 
-            if (_turnManager != null)
+            if (!ReferenceEquals(_turnManager, null))
             {
                 _turnManager.OnTurnChanged -= HandleTurnChanged;
             }
@@ -93,9 +93,7 @@ namespace Runtime.Presentation.Presenters
 
                 // TODO: Initialize game with proper configuration
                 // This will be expanded when we have full game flow in Phase 7
-
                 UpdateUIForGameState();
-
                 Debug.Log("[GameBoardPresenter] Game initialized successfully");
             }
             catch (System.Exception exception)
@@ -137,7 +135,7 @@ namespace Runtime.Presentation.Presenters
         private async void HandleBackToMenuClicked()
         {
             Debug.Log("[GameBoardPresenter] Back to menu clicked");
-
+            
             try
             {
                 await _sceneNavigator.LoadScene((int)SceneConfigs.MainMenuScene);
@@ -177,7 +175,6 @@ namespace Runtime.Presentation.Presenters
 
             // TODO: Update UI based on current player turn
             // Enable/disable buttons based on whether it's the human player's turn
-
             bool isHumanPlayerTurn = !currentPlayer.IsAI;
             _view.SetDrawButtonEnabled(isHumanPlayerTurn);
             _view.SetDiscardButtonEnabled(isHumanPlayerTurn);

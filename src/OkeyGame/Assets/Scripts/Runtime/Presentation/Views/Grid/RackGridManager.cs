@@ -23,16 +23,14 @@ namespace Runtime.Presentation.Views.Grid
         [SerializeField] private Transform _topRowParent;
         [SerializeField] private Transform _bottomRowParent;
         [SerializeField] private Transform _gridContainer;
-
+        
         private readonly GridCell[,] _gridCells = new GridCell[GRID_ROWS, GRID_COLUMNS];
         private readonly Dictionary<GridPosition, Vector3> _worldPositions = new Dictionary<GridPosition, Vector3>();
         private readonly List<GridPosition> _availablePositions = new List<GridPosition>();
-
         public event Action<GridPosition, OkeyPiece> OnPiecePlaced;
         public event Action<GridPosition, OkeyPiece> OnPieceRemoved;
         public event Action<GridPosition> OnCellHighlighted;
         public event Action<GridPosition> OnCellUnhighlighted;
-
         public int OccupiedCellCount { get; private set; }
         public int AvailableCellCount => TOTAL_GRID_CELLS - OccupiedCellCount;
         public bool IsFull => OccupiedCellCount >= TOTAL_GRID_CELLS;
@@ -48,7 +46,7 @@ namespace Runtime.Presentation.Views.Grid
         {
             _availablePositions.Clear();
             OccupiedCellCount = 0;
-
+            
             for (int row = 0; row < GRID_ROWS; row++)
             {
                 for (int column = 0; column < GRID_COLUMNS; column++)
@@ -63,19 +61,17 @@ namespace Runtime.Presentation.Views.Grid
         private void CalculateWorldPositions()
         {
             _worldPositions.Clear();
-
+            
             for (int row = 0; row < GRID_ROWS; row++)
             {
                 Transform parentTransform = row == 0 ? _topRowParent : _bottomRowParent;
                 float yOffset = row == 0 ? _rowSpacing * 0.5f : -_rowSpacing * 0.5f;
-
+                
                 for (int column = 0; column < GRID_COLUMNS; column++)
                 {
                     GridPosition position = new GridPosition(row, column);
-                    
                     float xPosition = (column - (GRID_COLUMNS - 1) * 0.5f) * (_cellWidth + _cellSpacing);
                     Vector3 worldPosition = parentTransform.position + new Vector3(xPosition, yOffset, 0f);
-                    
                     _worldPositions[position] = worldPosition;
                 }
             }
@@ -97,20 +93,20 @@ namespace Runtime.Presentation.Views.Grid
             _availablePositions.Remove(position);
             OccupiedCellCount++;
             OnPiecePlaced?.Invoke(position, piece);
-            
             return true;
         }
 
         public bool TryRemovePiece(GridPosition position, out OkeyPiece removedPiece)
         {
             removedPiece = null;
-
+            
             if (!IsValidPosition(position))
             {
                 return false;
             }
 
             GridCell cell = _gridCells[position.Row, position.Column];
+            
             if (cell.IsEmpty)
             {
                 return false;
@@ -120,7 +116,6 @@ namespace Runtime.Presentation.Views.Grid
             _availablePositions.Add(position);
             OccupiedCellCount--;
             OnPieceRemoved?.Invoke(position, removedPiece);
-            
             return true;
         }
 
@@ -131,28 +126,31 @@ namespace Runtime.Presentation.Views.Grid
                 return false;
             }
 
-            if (!TryPlacePiece(piece, toPosition))
+            if (TryPlacePiece(piece, toPosition))
             {
-                TryPlacePiece(piece, fromPosition);
-                return false;
+                return true;
             }
-
-            return true;
+            
+            TryPlacePiece(piece, fromPosition);
+            return false;
         }
 
         public GridPosition GetNearestValidPosition(Vector3 worldPosition)
         {
             GridPosition nearestPosition = new GridPosition(0, 0);
             float nearestDistance = float.MaxValue;
-
+            
             foreach (KeyValuePair<GridPosition, Vector3> kvp in _worldPositions)
             {
                 float distance = Vector3.Distance(worldPosition, kvp.Value);
-                if (distance < nearestDistance && IsPositionAvailable(kvp.Key))
+                
+                if (!(distance < nearestDistance) || !IsPositionAvailable(kvp.Key))
                 {
-                    nearestDistance = distance;
-                    nearestPosition = kvp.Key;
+                    continue;
                 }
+                
+                nearestDistance = distance;
+                nearestPosition = kvp.Key;
             }
 
             return nearestPosition;
@@ -167,15 +165,18 @@ namespace Runtime.Presentation.Views.Grid
         {
             GridPosition nearestPosition = new GridPosition(0, 0);
             float nearestDistance = float.MaxValue;
-
+            
             foreach (KeyValuePair<GridPosition, Vector3> kvp in _worldPositions)
             {
                 float distance = Vector3.Distance(worldPosition, kvp.Value);
-                if (distance < nearestDistance)
+                
+                if (!(distance < nearestDistance))
                 {
-                    nearestDistance = distance;
-                    nearestPosition = kvp.Key;
+                    continue;
                 }
+                
+                nearestDistance = distance;
+                nearestPosition = kvp.Key;
             }
 
             return nearestPosition;
@@ -183,8 +184,8 @@ namespace Runtime.Presentation.Views.Grid
 
         public bool IsValidPosition(GridPosition position)
         {
-            return position.Row >= 0 && position.Row < GRID_ROWS &&
-                   position.Column >= 0 && position.Column < GRID_COLUMNS;
+            return position.Row >= 0 && position.Row < GRID_ROWS && position.Column >= 0 &&
+                   position.Column < GRID_COLUMNS;
         }
 
         public bool IsPositionOccupied(GridPosition position)
@@ -221,7 +222,7 @@ namespace Runtime.Presentation.Views.Grid
 
             GridCell cell = _gridCells[position.Row, position.Column];
             cell.SetHighlighted(highlight);
-
+            
             if (highlight)
             {
                 OnCellHighlighted?.Invoke(position);
@@ -263,7 +264,7 @@ namespace Runtime.Presentation.Views.Grid
         public List<GridPosition> GetOccupiedPositions()
         {
             List<GridPosition> occupiedPositions = new List<GridPosition>();
-
+            
             for (int row = 0; row < GRID_ROWS; row++)
             {
                 for (int column = 0; column < GRID_COLUMNS; column++)
@@ -296,7 +297,8 @@ namespace Runtime.Presentation.Views.Grid
             ClearAllHighlights();
         }
 
-        public async UniTask AnimateToPositionAsync(Transform tileTransform, GridPosition targetPosition, float duration = 0.3f)
+        public async UniTask AnimateToPositionAsync(Transform tileTransform, GridPosition targetPosition,
+            float duration = 0.3f)
         {
             if (!IsValidPosition(targetPosition))
             {
@@ -306,15 +308,14 @@ namespace Runtime.Presentation.Views.Grid
             Vector3 targetWorldPosition = GetWorldPosition(targetPosition);
             Vector3 startPosition = tileTransform.position;
             float elapsedTime = 0f;
-
+            
             while (elapsedTime < duration)
             {
                 elapsedTime += Time.deltaTime;
                 float progress = elapsedTime / duration;
-                
+
                 // Ease-out curve for natural movement
                 float easedProgress = 1f - Mathf.Pow(1f - progress, 3f);
-                
                 tileTransform.position = Vector3.Lerp(startPosition, targetWorldPosition, easedProgress);
                 await UniTask.Yield();
             }

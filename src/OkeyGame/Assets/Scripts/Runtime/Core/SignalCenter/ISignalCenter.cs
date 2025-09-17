@@ -1,6 +1,6 @@
 using System;
 
-namespace Runtime.Core.Signals
+namespace Runtime.Core.SignalCenter
 {
     public interface ISignalCenter
     {

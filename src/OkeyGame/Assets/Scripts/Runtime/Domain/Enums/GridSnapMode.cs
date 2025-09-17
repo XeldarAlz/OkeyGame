@@ -1,9 +1,9 @@
 namespace Runtime.Domain.Enums
 {
-    public enum GridSnapMode
+    public enum GridSnapMode : byte
     {
-        Nearest,
-        ValidOnly,
-        None
+        None = 0,
+        Nearest = 1,
+        ValidOnly = 2,
     }
 }

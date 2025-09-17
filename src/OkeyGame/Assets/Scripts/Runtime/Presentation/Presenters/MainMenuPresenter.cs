@@ -20,7 +20,7 @@ namespace Runtime.Presentation.Presenters
         {
             base.SubscribeToEvents();
 
-            if (_view != null)
+            if (!ReferenceEquals(_view, null))
             {
                 _view.OnSinglePlayerClicked += HandleSinglePlayerClicked;
                 _view.OnMultiplayerClicked += HandleMultiplayerClicked;
@@ -32,7 +32,7 @@ namespace Runtime.Presentation.Presenters
 
         protected override void UnsubscribeFromEvents()
         {
-            if (_view != null)
+            if (!ReferenceEquals(_view, null))
             {
                 _view.OnSinglePlayerClicked -= HandleSinglePlayerClicked;
                 _view.OnMultiplayerClicked -= HandleMultiplayerClicked;
@@ -73,7 +73,6 @@ namespace Runtime.Presentation.Presenters
         private void HandleExitClicked()
         {
             Debug.Log("[MainMenuPresenter] Exit clicked");
-            
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else

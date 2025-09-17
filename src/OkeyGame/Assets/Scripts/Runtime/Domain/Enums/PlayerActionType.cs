@@ -1,14 +1,13 @@
 namespace Runtime.Domain.Enums
 {
-    public enum PlayerActionType
+    public enum PlayerActionType : byte
     {
-        None,
-        DrawFromPile,
-        DrawFromDiscard,
-        DiscardTile,
-        MoveTileInRack,
-        DeclareWin,
-        ShowIndicator,
-        Pass
+        None = 0,
+        DrawFromPile = 1,
+        DrawFromDiscard = 2,
+        DiscardTile = 3,
+        MoveTileInRack = 4,
+        DeclareWin = 5,
+        ShowIndicator = 6,
     }
 }

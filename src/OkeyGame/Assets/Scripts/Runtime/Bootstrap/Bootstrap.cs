@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-using Runtime.Core.Signals;
+using Runtime.Core.Configs;
 using Runtime.Infrastructure.AssetManagement;
 using Runtime.Infrastructure.Localization;
 using Runtime.Infrastructure.Persistence;
@@ -10,16 +10,13 @@ using Zenject;
 
 namespace Runtime.Bootstrap
 {
-    public sealed class InitializationBootstrap : MonoBehaviour
+    public sealed class Bootstrap : MonoBehaviour
     {
-        [SerializeField] private string _mainMenuSceneName = "MainMenu";
-        
         [Inject] private IAssetService _assetService;
         [Inject] private ILocalizationService _localizationService;
-        [Inject] private ISceneNavigator _sceneNavigator;
         [Inject] private IAudioService _audioService;
         [Inject] private IPersistenceService _persistenceService;
-        [Inject] private ISignalCenter _signalCenter;
+        [Inject] private ISceneNavigator _sceneNavigator;
 
         private async void Start()
         {
@@ -32,12 +29,10 @@ namespace Runtime.Bootstrap
             try
             {
                 Debug.Log("[InitializationBootstrap] Starting initialization of core services...");
-                
                 await _assetService.InitializeAsync();
                 await _localizationService.InitializeAsync();
                 await _audioService.InitializeAsync();
                 await _persistenceService.InitializeAsync();
-                
                 Debug.Log("[InitializationBootstrap] Infrastructure services initialized successfully");
             }
             catch (System.Exception exception)
@@ -50,28 +45,8 @@ namespace Runtime.Bootstrap
         {
             try
             {
-                Debug.Log($"[InitializationBootstrap] Loading MainMenu scene: {_mainMenuSceneName}");
-                
-                // Fire signal to load main menu with loading screen
-                _signalCenter.Fire(new LoadSceneRequestSignal(_mainMenuSceneName, true, "Loading Main Menu..."));
-                
-                // Wait for scene load completion
-                var tcs = new UniTaskCompletionSource<bool>();
-                
-                void OnSceneLoadCompleted(SceneLoadCompletedSignal signal)
-                {
-                    if (signal.SceneName == _mainMenuSceneName)
-                    {
-                        _signalCenter.Unsubscribe<SceneLoadCompletedSignal>(OnSceneLoadCompleted);
-                        tcs.TrySetResult(true);
-                    }
-                }
-                
-                _signalCenter.Subscribe<SceneLoadCompletedSignal>(OnSceneLoadCompleted);
-                
-                // Wait for the scene to load
-                await tcs.Task;
-                
+                Debug.Log($"[InitializationBootstrap] Loading MainMenu scene");
+                await _sceneNavigator.LoadScene((int)SceneConfigs.MainMenuScene);
                 Debug.Log("[InitializationBootstrap] MainMenu scene loaded successfully");
             }
             catch (System.Exception exception)

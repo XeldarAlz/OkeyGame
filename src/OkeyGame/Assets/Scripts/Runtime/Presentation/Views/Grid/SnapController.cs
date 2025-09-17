@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Runtime.Domain.ValueObjects;
 using Cysharp.Threading.Tasks;
@@ -16,14 +17,12 @@ namespace Runtime.Presentation.Views.Grid
         [SerializeField] private float _snapPreviewScale = 1.05f;
         [SerializeField] private Color _snapPreviewColor = Color.green;
         [SerializeField] private float _snapPreviewAlpha = 0.7f;
-
+        
         private RackGridManager _gridManager;
         private Camera _mainCamera;
-
         public event Action<GridPosition> OnSnapPreview;
         public event Action OnSnapPreviewClear;
         public event Action<Transform, GridPosition> OnSnapComplete;
-
         public float SnapDistance => _snapDistance;
         public float SnapAnimationDuration => _snapAnimationDuration;
 
@@ -46,7 +45,6 @@ namespace Runtime.Presentation.Views.Grid
 
             Vector3 gridWorldPosition = _gridManager.GetWorldPosition(gridPosition);
             float distance = Vector3.Distance(worldPosition, gridWorldPosition);
-            
             return distance <= _snapDistance;
         }
 
@@ -59,7 +57,7 @@ namespace Runtime.Presentation.Views.Grid
 
             GridPosition nearestPosition = new GridPosition(-1, -1);
             float nearestDistance = float.MaxValue;
-
+            
             for (int row = 0; row < RackGridManager.GRID_ROWS; row++)
             {
                 for (int column = 0; column < RackGridManager.GRID_COLUMNS; column++)
@@ -74,11 +72,13 @@ namespace Runtime.Presentation.Views.Grid
                     Vector3 gridWorldPosition = _gridManager.GetWorldPosition(position);
                     float distance = Vector3.Distance(worldPosition, gridWorldPosition);
 
-                    if (distance < nearestDistance && distance <= _snapDistance)
+                    if (!(distance < nearestDistance) || !(distance <= _snapDistance))
                     {
-                        nearestDistance = distance;
-                        nearestPosition = position;
+                        continue;
                     }
+                    
+                    nearestDistance = distance;
+                    nearestPosition = position;
                 }
             }
 
@@ -106,9 +106,8 @@ namespace Runtime.Presentation.Views.Grid
             Vector3 targetWorldPosition = _gridManager.GetWorldPosition(gridPosition);
             Vector3 startPosition = target.position;
             Vector3 startScale = target.localScale;
-
             float elapsedTime = 0f;
-
+            
             while (elapsedTime < _snapAnimationDuration)
             {
                 elapsedTime += Time.deltaTime;
@@ -121,19 +120,18 @@ namespace Runtime.Presentation.Views.Grid
                 // Optional scale animation for feedback
                 float scaleMultiplier = 1f + (Mathf.Sin(normalizedTime * Mathf.PI) * 0.05f);
                 target.localScale = startScale * scaleMultiplier;
-
                 await UniTask.Yield();
             }
 
             // Ensure final position and scale
             target.position = targetWorldPosition;
             target.localScale = startScale;
-
             OnSnapComplete?.Invoke(target, gridPosition);
             return true;
         }
 
-        public async UniTask<bool> SnapWithBounceAsync(Transform target, GridPosition gridPosition, float bounceIntensity = 0.1f)
+        public async UniTask<bool> SnapWithBounceAsync(Transform target, GridPosition gridPosition,
+            float bounceIntensity = 0.1f)
         {
             if (_gridManager == null || target == null)
             {
@@ -148,10 +146,9 @@ namespace Runtime.Presentation.Views.Grid
             Vector3 targetWorldPosition = _gridManager.GetWorldPosition(gridPosition);
             Vector3 startPosition = target.position;
             Vector3 startScale = target.localScale;
-
             float totalDuration = _snapAnimationDuration;
             float elapsedTime = 0f;
-
+            
             while (elapsedTime < totalDuration)
             {
                 elapsedTime += Time.deltaTime;
@@ -176,16 +173,15 @@ namespace Runtime.Presentation.Views.Grid
                 target.position = Vector3.Lerp(startPosition, targetWorldPosition, positionProgress);
 
                 // Scale bounce effect
-                float scaleMultiplier = 1f + (Mathf.Sin(normalizedTime * Mathf.PI * 2f) * bounceIntensity * (1f - normalizedTime));
+                float scaleMultiplier =
+                    1f + (Mathf.Sin(normalizedTime * Mathf.PI * 2f) * bounceIntensity * (1f - normalizedTime));
                 target.localScale = startScale * scaleMultiplier;
-
                 await UniTask.Yield();
             }
 
             // Ensure final position and scale
             target.position = targetWorldPosition;
             target.localScale = startScale;
-
             OnSnapComplete?.Invoke(target, gridPosition);
             return true;
         }
@@ -254,9 +250,8 @@ namespace Runtime.Presentation.Views.Grid
                 return new GridPosition[0];
             }
 
-            System.Collections.Generic.List<(GridPosition position, float distance)> candidates = 
-                new System.Collections.Generic.List<(GridPosition, float)>();
-
+            List<(GridPosition position, float distance)> candidates = new();
+            
             for (int row = 0; row < RackGridManager.GRID_ROWS; row++)
             {
                 for (int column = 0; column < RackGridManager.GRID_COLUMNS; column++)
@@ -270,7 +265,7 @@ namespace Runtime.Presentation.Views.Grid
 
                     Vector3 gridWorldPosition = _gridManager.GetWorldPosition(position);
                     float distance = Vector3.Distance(worldPosition, gridWorldPosition);
-
+                    
                     if (distance <= _snapDistance)
                     {
                         candidates.Add((position, distance));
@@ -327,6 +322,7 @@ namespace Runtime.Presentation.Views.Grid
             }
 
             Gizmos.color = Color.cyan;
+            
             for (int row = 0; row < RackGridManager.GRID_ROWS; row++)
             {
                 for (int column = 0; column < RackGridManager.GRID_COLUMNS; column++)

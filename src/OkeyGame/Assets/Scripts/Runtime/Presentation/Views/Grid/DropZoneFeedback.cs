@@ -25,14 +25,13 @@ namespace Runtime.Presentation.Views.Grid
         [SerializeField] private float _fadeOutDuration = 0.15f;
         [SerializeField] private float _pulseSpeed = 2f;
         [SerializeField] private float _pulseIntensity = 0.3f;
-
+        
         private DropZoneState _currentState;
         private GridPosition _gridPosition;
         private bool _isVisible;
         private bool _isAnimating;
-
+        
         public event Action<DropZoneFeedback, DropZoneState> OnStateChanged;
-
         public DropZoneState CurrentState => _currentState;
         public GridPosition GridPosition => _gridPosition;
         public bool IsVisible => _isVisible;
@@ -41,16 +40,16 @@ namespace Runtime.Presentation.Views.Grid
         [Serializable]
         public sealed class DropZoneVisualConfig
         {
-            [Header("Colors")]
+            [Header("Colors")] 
             public Color backgroundColor = Color.white;
             public Color borderColor = Color.black;
             
-            [Header("Scale and Alpha")]
+            [Header("Scale and Alpha")] 
             public Vector3 scale = Vector3.one;
             public float alpha = 0.7f;
             public float borderWidth = 2f;
-
-            [Header("Effects")]
+            
+            [Header("Effects")] 
             public bool enablePulse = false;
             public bool enableParticles = false;
             public Color particleColor = Color.white;
@@ -106,7 +105,6 @@ namespace Runtime.Presentation.Views.Grid
 
             DropZoneState previousState = _currentState;
             _currentState = newState;
-
             DropZoneVisualConfig targetConfig = GetConfigForState(newState);
             
             if (newState == DropZoneState.Hidden)
@@ -150,13 +148,12 @@ namespace Runtime.Presentation.Views.Grid
             {
                 float elapsedTime = 0f;
                 float startAlpha = _canvasGroup.alpha;
-
+                
                 while (elapsedTime < _fadeInDuration)
                 {
                     elapsedTime += Time.deltaTime;
                     float progress = elapsedTime / _fadeInDuration;
                     float easedProgress = Mathf.SmoothStep(0f, 1f, progress);
-                    
                     _canvasGroup.alpha = Mathf.Lerp(startAlpha, config.alpha, easedProgress);
                     await UniTask.Yield();
                 }
@@ -196,13 +193,12 @@ namespace Runtime.Presentation.Views.Grid
             {
                 float elapsedTime = 0f;
                 float startAlpha = _canvasGroup.alpha;
-
+                
                 while (elapsedTime < _fadeOutDuration)
                 {
                     elapsedTime += Time.deltaTime;
                     float progress = elapsedTime / _fadeOutDuration;
                     float easedProgress = Mathf.SmoothStep(0f, 1f, progress);
-                    
                     _canvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, easedProgress);
                     await UniTask.Yield();
                 }
@@ -245,9 +241,7 @@ namespace Runtime.Presentation.Views.Grid
                 float time = Time.time * _pulseSpeed;
                 float pulseValue = Mathf.Sin(time) * _pulseIntensity;
                 float scaleMultiplier = 1f + pulseValue;
-                
                 transform.localScale = originalScale * scaleMultiplier;
-                
                 await UniTask.Yield();
             }
 
@@ -263,10 +257,8 @@ namespace Runtime.Presentation.Views.Grid
 
             ParticleSystem.MainModule main = _particleEffect.main;
             main.startColor = config.particleColor;
-
             ParticleSystem.EmissionModule emission = _particleEffect.emission;
             emission.rateOverTime = config.particleEmissionRate;
-
             _particleEffect.Play();
         }
 
@@ -327,9 +319,8 @@ namespace Runtime.Presentation.Views.Grid
             Vector3 targetScale = originalScale * 1.2f;
             Color originalColor = _backgroundImage != null ? _backgroundImage.color : Color.white;
             Color targetColor = Color.Lerp(originalColor, Color.white, 0.5f);
-
             float elapsedTime = 0f;
-
+            
             while (elapsedTime < duration)
             {
                 elapsedTime += Time.deltaTime;
@@ -350,6 +341,7 @@ namespace Runtime.Presentation.Views.Grid
 
             // Reset to original values
             transform.localScale = originalScale;
+            
             if (_backgroundImage != null)
             {
                 _backgroundImage.color = originalColor;
@@ -384,51 +376,33 @@ namespace Runtime.Presentation.Views.Grid
             }
 
             // Ensure we have default configs
-            if (_validConfig == null)
+            _validConfig ??= new DropZoneVisualConfig
             {
-                _validConfig = new DropZoneVisualConfig
-                {
-                    backgroundColor = Color.green,
-                    borderColor = Color.white,
-                    alpha = 0.7f,
-                    enablePulse = true
-                };
-            }
+                backgroundColor = Color.green, borderColor = Color.white, alpha = 0.7f, enablePulse = true
+            };
 
-            if (_invalidConfig == null)
+            _invalidConfig ??= new DropZoneVisualConfig
             {
-                _invalidConfig = new DropZoneVisualConfig
-                {
-                    backgroundColor = Color.red,
-                    borderColor = Color.white,
-                    alpha = 0.7f,
-                    enablePulse = false
-                };
-            }
+                backgroundColor = Color.red, borderColor = Color.white, alpha = 0.7f, enablePulse = false
+            };
 
-            if (_hoverConfig == null)
+            _hoverConfig ??= new DropZoneVisualConfig
             {
-                _hoverConfig = new DropZoneVisualConfig
-                {
-                    backgroundColor = Color.yellow,
-                    borderColor = Color.white,
-                    alpha = 0.8f,
-                    scale = Vector3.one * 1.1f,
-                    enablePulse = true
-                };
-            }
+                backgroundColor = Color.yellow,
+                borderColor = Color.white,
+                alpha = 0.8f,
+                scale = Vector3.one * 1.1f,
+                enablePulse = true
+            };
 
-            if (_snapPreviewConfig == null)
+            _snapPreviewConfig ??= new DropZoneVisualConfig
             {
-                _snapPreviewConfig = new DropZoneVisualConfig
-                {
-                    backgroundColor = Color.cyan,
-                    borderColor = Color.white,
-                    alpha = 0.9f,
-                    scale = Vector3.one * 1.05f,
-                    enableParticles = true
-                };
-            }
+                backgroundColor = Color.cyan,
+                borderColor = Color.white,
+                alpha = 0.9f,
+                scale = Vector3.one * 1.05f,
+                enableParticles = true
+            };
         }
     }
 }

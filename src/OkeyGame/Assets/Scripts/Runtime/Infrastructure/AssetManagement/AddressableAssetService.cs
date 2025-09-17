@@ -10,9 +10,7 @@ namespace Runtime.Infrastructure.AssetManagement
     public sealed class AddressableAssetService : IAssetService
     {
         private readonly Dictionary<string, object> _loadedAssets;
-        
         private readonly List<AsyncOperationHandle> _handles;
-        
         private bool _isInitialized;
 
         public AddressableAssetService()
@@ -62,7 +60,6 @@ namespace Runtime.Infrastructure.AssetManagement
                 await handle;
                 T asset = handle.Result;
                 _loadedAssets[key] = asset;
-
                 return asset;
             }
             catch (System.Exception exception)
@@ -81,7 +78,6 @@ namespace Runtime.Infrastructure.AssetManagement
 
             UniTask<Object>[] loadTasks = keys.Select(key => LoadAssetAsync<Object>(key)).ToArray();
             await UniTask.WhenAll(loadTasks);
-
             Debug.Log($"[AddressableAssetService] Preloaded {keys.Length} assets");
         }
 
@@ -94,12 +90,14 @@ namespace Runtime.Infrastructure.AssetManagement
 
             for (int index = _handles.Count - 1; index >= 0; index--)
             {
-                if (ReferenceEquals(_handles[index].Result, asset))
+                if (!ReferenceEquals(_handles[index].Result, asset))
                 {
-                    Addressables.Release(_handles[index]);
-                    _handles.RemoveAt(index);
-                    break;
+                    continue;
                 }
+                
+                Addressables.Release(_handles[index]);
+                _handles.RemoveAt(index);
+                break;
             }
 
             _loadedAssets.Remove(key);
@@ -117,7 +115,6 @@ namespace Runtime.Infrastructure.AssetManagement
 
             _handles.Clear();
             _loadedAssets.Clear();
-
             Debug.Log("[AddressableAssetService] Released all assets");
         }
 

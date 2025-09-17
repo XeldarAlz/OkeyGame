@@ -1,8 +1,8 @@
 namespace Runtime.Domain.Enums
 {
-    public enum PlayerType
+    public enum PlayerType : byte
     {
-        Human,
-        AI
+        Human = 0,
+        AI = 1
     }
 }
