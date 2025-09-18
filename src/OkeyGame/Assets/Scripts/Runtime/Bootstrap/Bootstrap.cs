@@ -1,10 +1,10 @@
 using Cysharp.Threading.Tasks;
 using Runtime.Core.Configs;
+using Runtime.Core.Navigation;
 using Runtime.Infrastructure.AssetManagement;
 using Runtime.Infrastructure.Localization;
 using Runtime.Infrastructure.Persistence;
 using Runtime.Services.Audio;
-using Runtime.Services.Navigation;
 using UnityEngine;
 using Zenject;
 

@@ -1,7 +1,10 @@
 using Cysharp.Threading.Tasks;
 using Runtime.Core.Configs;
+using Runtime.Core.Navigation;
 using Runtime.Presentation.Views;
-using Runtime.Services.Navigation;
+using Runtime.Core.SignalCenter;
+using Runtime.Core.Signals;
+using UnityEngine;
 using Zenject;
 
 namespace Runtime.Presentation.Presenters
@@ -9,30 +12,27 @@ namespace Runtime.Presentation.Presenters
     public sealed class MainMenuPresenter : BasePresenter<MainMenuView>
     {
         private readonly ISceneNavigator _sceneNavigator;
+        private readonly ISignalCenter _signalCenter;
 
         [Inject]
-        public MainMenuPresenter(ISceneNavigator sceneNavigator)
+        public MainMenuPresenter(ISceneNavigator sceneNavigator, ISignalCenter signalCenter)
         {
             _sceneNavigator = sceneNavigator;
+            _signalCenter = signalCenter;
         }
 
         protected override void SubscribeToEvents()
         {
             base.SubscribeToEvents();
 
-            if (ReferenceEquals(_view, null))
-            {
-                return;
-            }
-
-            _view.OnSinglePlayerClicked += OnSinglePlayerClicked;
-            _view.OnMultiplayerClicked += HandleMultiplayerClicked;
-            _view.OnSettingsClicked += HandleSettingsClicked;
-            _view.OnExitClicked += HandleExitClicked;
-            _view.OnBackFromSettingsClicked += HandleBackFromSettingsClicked;
+            _signalCenter.Subscribe<MainMenuSinglePlayerClickedSignal>(OnSinglePlayerClicked);
+            _signalCenter.Subscribe<MainMenuMultiplayerClickedSignal>(OnMultiplayerClicked);
+            _signalCenter.Subscribe<MainMenuSettingsClickedSignal>(OnSettingsClicked);
+            _signalCenter.Subscribe<MainMenuExitClickedSignal>(OnExitClicked);
+            _signalCenter.Subscribe<MainMenuBackFromSettingsClickedSignal>(OnBackFromSettingsClicked);
         }
 
-        private void OnSinglePlayerClicked()
+        private void OnSinglePlayerClicked(MainMenuSinglePlayerClickedSignal signal)
         {
             HandleSinglePlayerClicked().Forget();
         }
@@ -42,17 +42,17 @@ namespace Runtime.Presentation.Presenters
             await _sceneNavigator.LoadScene((int)SceneConfigs.PlayScene);
         }
 
-        private void HandleMultiplayerClicked()
+        private void OnMultiplayerClicked(MainMenuMultiplayerClickedSignal signal)
         {
             // TODO: Implement multiplayer functionality in future phases
         }
 
-        private void HandleSettingsClicked()
+        private void OnSettingsClicked(MainMenuSettingsClickedSignal signal)
         {
             _view?.ShowSettingsPanel();
         }
 
-        private void HandleExitClicked()
+        private void OnExitClicked(MainMenuExitClickedSignal signal)
         {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
@@ -61,23 +61,18 @@ namespace Runtime.Presentation.Presenters
 #endif
         }
 
-        private void HandleBackFromSettingsClicked()
+        private void OnBackFromSettingsClicked(MainMenuBackFromSettingsClickedSignal signal)
         {
             _view?.ShowMainPanel();
         }
 
         protected override void UnsubscribeFromEvents()
         {
-            if (ReferenceEquals(_view, null))
-            {
-                return;
-            }
-
-            _view.OnSinglePlayerClicked -= OnSinglePlayerClicked;
-            _view.OnMultiplayerClicked -= HandleMultiplayerClicked;
-            _view.OnSettingsClicked -= HandleSettingsClicked;
-            _view.OnExitClicked -= HandleExitClicked;
-            _view.OnBackFromSettingsClicked -= HandleBackFromSettingsClicked;
+            _signalCenter.Unsubscribe<MainMenuSinglePlayerClickedSignal>(OnSinglePlayerClicked);
+            _signalCenter.Unsubscribe<MainMenuMultiplayerClickedSignal>(OnMultiplayerClicked);
+            _signalCenter.Unsubscribe<MainMenuSettingsClickedSignal>(OnSettingsClicked);
+            _signalCenter.Unsubscribe<MainMenuExitClickedSignal>(OnExitClicked);
+            _signalCenter.Unsubscribe<MainMenuBackFromSettingsClickedSignal>(OnBackFromSettingsClicked);
 
             base.UnsubscribeFromEvents();
         }

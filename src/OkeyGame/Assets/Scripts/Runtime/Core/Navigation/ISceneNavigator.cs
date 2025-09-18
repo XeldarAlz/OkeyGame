@@ -1,7 +1,7 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
 
-namespace Runtime.Services.Navigation
+namespace Runtime.Core.Navigation
 {
     public interface ISceneNavigator
     {

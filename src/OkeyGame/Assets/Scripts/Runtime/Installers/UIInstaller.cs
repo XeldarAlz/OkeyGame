@@ -21,6 +21,9 @@ namespace Runtime.Installers
             Container.Bind<MainMenuView>().FromComponentInHierarchy().AsSingle();
             Container.BindInterfacesAndSelfTo<MainMenuPresenter>().AsSingle().NonLazy();
             
+            Container.Bind<SettingsMenuView>().FromComponentInHierarchy().AsSingle();
+            Container.BindInterfacesAndSelfTo<SettingsMenuPresenter>().AsSingle().NonLazy();
+            
             Debug.Log("[UIInstaller] Presenters bound");
         }
     }

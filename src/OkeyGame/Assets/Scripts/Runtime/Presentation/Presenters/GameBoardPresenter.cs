@@ -1,12 +1,12 @@
 using Cysharp.Threading.Tasks;
 using Runtime.Core.Configs;
+using Runtime.Core.Navigation;
 using Runtime.Domain.Enums;
 using Runtime.Domain.Models;
 using Runtime.Presentation.Views;
 using Runtime.Services.GameLogic;
 using Runtime.Services.GameLogic.State;
 using Runtime.Services.GameLogic.Turn;
-using Runtime.Services.Navigation;
 using UnityEngine;
 using Zenject;
 

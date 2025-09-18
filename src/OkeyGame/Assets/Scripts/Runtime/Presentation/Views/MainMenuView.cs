@@ -1,12 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 using TMPro;
+using Runtime.Core.SignalCenter;
+using Runtime.Core.Signals;
+using Zenject;
 
 namespace Runtime.Presentation.Views
 {
     public sealed class MainMenuView : BaseView
     {
+        private ISignalCenter _signalCenter;
+
         [Header("Main Menu Buttons")] 
         [SerializeField] private Button _singlePlayerButton;
 
@@ -18,14 +22,17 @@ namespace Runtime.Presentation.Views
         [SerializeField] private GameObject _mainPanel;
         [SerializeField] private GameObject _settingsPanel;
 
+        [Header("Settings")] 
+        [SerializeField] private Button _settingsBackButton;
+
         [Header("Texts")] 
         [SerializeField] private TMP_Text _versionText;
 
-        public event Action OnSinglePlayerClicked;
-        public event Action OnMultiplayerClicked;
-        public event Action OnSettingsClicked;
-        public event Action OnExitClicked;
-        public event Action OnBackFromSettingsClicked;
+        [Inject]
+        private void Construct(ISignalCenter signalCenter)
+        {
+            _signalCenter = signalCenter;
+        }
 
         protected override void Initialize()
         {
@@ -36,10 +43,11 @@ namespace Runtime.Presentation.Views
 
         private void SubscribeToButtonEvents()
         {
-            _singlePlayerButton?.onClick.AddListener(() => OnSinglePlayerClicked?.Invoke());
-            _multiplayerButton?.onClick.AddListener(() => OnMultiplayerClicked?.Invoke());
-            _settingsButton?.onClick.AddListener(() => OnSettingsClicked?.Invoke());
-            _exitButton?.onClick.AddListener(() => OnExitClicked?.Invoke());
+            _singlePlayerButton?.onClick.AddListener(() => _signalCenter.Fire(new MainMenuSinglePlayerClickedSignal()));
+            _multiplayerButton?.onClick.AddListener(() => _signalCenter.Fire(new MainMenuMultiplayerClickedSignal()));
+            _settingsButton?.onClick.AddListener(() => _signalCenter.Fire(new MainMenuSettingsClickedSignal()));
+            _exitButton?.onClick.AddListener(() => _signalCenter.Fire(new MainMenuExitClickedSignal()));
+            _settingsBackButton?.onClick.AddListener(() => _signalCenter.Fire(new MainMenuBackFromSettingsClickedSignal()));
         }
 
         public void ShowMainPanel()
@@ -60,6 +68,7 @@ namespace Runtime.Presentation.Views
             _multiplayerButton?.onClick.RemoveAllListeners();
             _settingsButton?.onClick.RemoveAllListeners();
             _exitButton?.onClick.RemoveAllListeners();
+            _settingsBackButton?.onClick.RemoveAllListeners();
         }
 
         protected override void Cleanup()

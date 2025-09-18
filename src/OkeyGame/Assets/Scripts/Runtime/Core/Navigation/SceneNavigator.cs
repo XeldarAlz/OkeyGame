@@ -1,12 +1,12 @@
-using Cysharp.Threading.Tasks;
-using Runtime.Core.Signals;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using Runtime.Core.SignalCenter;
+using Runtime.Core.Signals;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
 
-namespace Runtime.Services.Navigation
+namespace Runtime.Core.Navigation
 {
     public sealed class SceneNavigator : ISceneNavigator
     {
