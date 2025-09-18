@@ -4,11 +4,12 @@ using Runtime.Core.Signals;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityUtils;
 using Zenject;
 
 namespace Runtime.Presentation.Views
 {
-    public sealed class LoadingScreenView : MonoBehaviour
+    public sealed class LoadingScreenView : PersistentSingleton<LoadingScreenView>
     {
         [Header("UI References")]
         [SerializeField] private CanvasGroup _loadingCanvasGroup;
@@ -22,14 +23,10 @@ namespace Runtime.Presentation.Views
         [Inject] private ISignalCenter _signalCenter;
         
         private bool _isVisible;
-        
-        private void Awake()
+
+        protected override void Awake()
         {
-            if (_loadingCanvasGroup == null)
-            {
-                _loadingCanvasGroup = GetComponent<CanvasGroup>();
-            }
-            
+            base.Awake();
             HideImmediate();
         }
         
@@ -40,6 +37,7 @@ namespace Runtime.Presentation.Views
                 Debug.LogError("SignalCenter is not initialized.");
                 return;
             }
+            
             SubscribeToSignals();
         }
         

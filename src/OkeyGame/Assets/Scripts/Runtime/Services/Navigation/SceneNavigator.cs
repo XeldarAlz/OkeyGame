@@ -86,11 +86,14 @@ namespace Runtime.Services.Navigation
             }
 
             CancellationTokenSource existing = _cancellationTokenSource;
-            if (!ReferenceEquals(existing, null))
+            if (ReferenceEquals(existing, null))
             {
-                existing.Cancel();
-                existing.Dispose();
-            }
+                return;
+            } 
+            
+            existing.Cancel(); 
+            existing.Dispose();
+
             _cancellationTokenSource = new CancellationTokenSource();
 
             while (!operation.isDone)

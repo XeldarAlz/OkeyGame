@@ -1,7 +1,7 @@
+using Cysharp.Threading.Tasks;
 using Runtime.Core.Configs;
 using Runtime.Presentation.Views;
 using Runtime.Services.Navigation;
-using UnityEngine;
 using Zenject;
 
 namespace Runtime.Presentation.Presenters
@@ -20,59 +20,40 @@ namespace Runtime.Presentation.Presenters
         {
             base.SubscribeToEvents();
 
-            if (!ReferenceEquals(_view, null))
+            if (ReferenceEquals(_view, null))
             {
-                _view.OnSinglePlayerClicked += HandleSinglePlayerClicked;
-                _view.OnMultiplayerClicked += HandleMultiplayerClicked;
-                _view.OnSettingsClicked += HandleSettingsClicked;
-                _view.OnExitClicked += HandleExitClicked;
-                _view.OnBackFromSettingsClicked += HandleBackFromSettingsClicked;
+                return;
             }
+
+            _view.OnSinglePlayerClicked += OnSinglePlayerClicked;
+            _view.OnMultiplayerClicked += HandleMultiplayerClicked;
+            _view.OnSettingsClicked += HandleSettingsClicked;
+            _view.OnExitClicked += HandleExitClicked;
+            _view.OnBackFromSettingsClicked += HandleBackFromSettingsClicked;
         }
 
-        protected override void UnsubscribeFromEvents()
+        private void OnSinglePlayerClicked()
         {
-            if (!ReferenceEquals(_view, null))
-            {
-                _view.OnSinglePlayerClicked -= HandleSinglePlayerClicked;
-                _view.OnMultiplayerClicked -= HandleMultiplayerClicked;
-                _view.OnSettingsClicked -= HandleSettingsClicked;
-                _view.OnExitClicked -= HandleExitClicked;
-                _view.OnBackFromSettingsClicked -= HandleBackFromSettingsClicked;
-            }
-
-            base.UnsubscribeFromEvents();
+            HandleSinglePlayerClicked().Forget();
         }
 
-        private async void HandleSinglePlayerClicked()
+        private async UniTask HandleSinglePlayerClicked()
         {
-            Debug.Log("[MainMenuPresenter] Single Player clicked");
-            
-            try
-            {
-                await _sceneNavigator.LoadScene((int)SceneConfigs.PlayScene);
-            }
-            catch (System.Exception exception)
-            {
-                Debug.LogError($"[MainMenuPresenter] Failed to load GameScene: {exception.Message}");
-            }
+            await _sceneNavigator.LoadScene((int)SceneConfigs.PlayScene);
         }
 
         private void HandleMultiplayerClicked()
         {
-            Debug.Log("[MainMenuPresenter] Multiplayer clicked");
             // TODO: Implement multiplayer functionality in future phases
         }
 
         private void HandleSettingsClicked()
         {
-            Debug.Log("[MainMenuPresenter] Settings clicked");
             _view?.ShowSettingsPanel();
         }
 
         private void HandleExitClicked()
         {
-            Debug.Log("[MainMenuPresenter] Exit clicked");
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -82,8 +63,23 @@ namespace Runtime.Presentation.Presenters
 
         private void HandleBackFromSettingsClicked()
         {
-            Debug.Log("[MainMenuPresenter] Back from settings clicked");
             _view?.ShowMainPanel();
+        }
+
+        protected override void UnsubscribeFromEvents()
+        {
+            if (ReferenceEquals(_view, null))
+            {
+                return;
+            }
+
+            _view.OnSinglePlayerClicked -= OnSinglePlayerClicked;
+            _view.OnMultiplayerClicked -= HandleMultiplayerClicked;
+            _view.OnSettingsClicked -= HandleSettingsClicked;
+            _view.OnExitClicked -= HandleExitClicked;
+            _view.OnBackFromSettingsClicked -= HandleBackFromSettingsClicked;
+
+            base.UnsubscribeFromEvents();
         }
     }
 }
